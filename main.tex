@@ -1,0 +1,74 @@
+\documentclass[12pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage[a4paper, margin=2cm]{geometry}
+\usepackage{wrapfig}
+\usepackage[acronym]{glossaries}
+\usepackage{glossary}
+\usepackage{import} % import sub files
+\usepackage{qtree}
+\usepackage{tikz}
+\usepackage{tikz-qtree}
+\usepackage{rotating}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{listings} % for code listings
+\usepackage{minted} % for code highlighting
+\usepackage{color}
+\usepackage{float}
+\usepackage{tocloft}
+\usepackage{hyperref}
+\usepackage{csquotes}
+\usepackage{setspace}
+\usepackage{config}
+
+%------------------------------------------------------------------------------%
+%                                   Document                                   %
+%------------------------------------------------------------------------------%
+
+\begin{document}
+
+    % Début %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \import{./pages}{titlepage}
+    \import{./sections/begin}{acknowledgements}
+    \import{./sections/begin}{abstract}
+    \import{./sections/begin}{table-figures}
+    \import{./sections/begin}{toc}
+    \import{./sections/begin}{introduction}
+
+    % Plan %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    \clearpage{}
+    \part{Context of the project}
+
+    \import{./sections/part1}{the-nist}
+    \import{./sections/part1}{objectives}
+    \import{./sections/part1}{problem-analisys}
+
+    \clearpage{}
+    \part{Realization and design}
+
+    \import{./sections/part2}{hedgehog}
+    \import{./sections/part2}{first-test}
+    \import{./sections/part2}{cholesky}
+
+    \clearpage{}
+    \part{Results and discussion}
+
+    \import{./sections/part3}{conclusion}
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % Bibliography %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \import{./sections/end}{bibliography}
+
+    % Glossaire %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \clearpage{}
+    \printglossaries
+
+    % Annexes %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \import{./appendicies/}{appendicies}
+
+\end{document}
