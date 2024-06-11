@@ -2,6 +2,17 @@
 %                               problem analisys                               %
 %------------------------------------------------------------------------------%
 
-\section{Problem analisys}
+\section{Problem analysis}
 
-TODO
+The first thing that will need to be done is understanding how to use \gls{hh}.
+To do that, the easiest way is to follow the tutorials and create first programs
+to explore the various features of the library. We will describe some of these
+programs in this repport in order to present the \gls{hh}.
+
+The next step will be to study \gls{fds}'s source code and isolate the
+different parts that will be parallelized with \gls{hh}. \gls{fds} is written in
+Fortran and some part of the code are already parallelized with either MPI or
+OpenMP. The objective is not to rewrite the entire application in C++. Here, we
+want to keep the original code and split it into different library that will be
+used in the C++ code. Only a few critical algorithms will be entirely rewritten
+in C++ in order to optimize the performances.
