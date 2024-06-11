@@ -4,4 +4,19 @@
 
 \section{Objectives}
 
-TODO
+The objective of the project is to use the \gls{hh} library to accelerate a
+simulation application called \gls{fds}.
+
+\gls{hh} is a \gls{hpc} library created at the NIST. It uses data-flow graphs to
+express algorithms composed of tasks that can be ran asynchronously. This
+library will be described in the section \ref{sec:hh}.
+
+\gls{fds} is a simulation of fire also created at the NIST. The principle is to
+simulation fire evolution given a certain configuration. The configuration is
+given threw a file that will information such as the size of the room, the
+walls, the windows and doors, the material on fire at the beginning, \dots
+
+The \gls{fds}'s team has acquire a new computing cluster, however the current
+program does not scale as expected when they increase the number of CPUs. Our
+main objective will be to see if it is possible to improve the performances
+using \gls{hh}.
