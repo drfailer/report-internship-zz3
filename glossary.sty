@@ -6,33 +6,29 @@
 
 \makeglossaries
 
-\newglossaryentry{API}{
-  name=API,
-  description={
-    (Application Programming Interface) Interface d'un service, logiciel ou
-    application, permettant donc de faciliter la communication de celui-ci avec
-    d'autres produits.
-  },
-  plural={APIs},
-  first={API (Application Programming Interface)}
-}
-
-\newglossaryentry{SFINAE}{
-  name=SFINAE,
-  description={
-    (Substitution Failure Is Not An Error) mécanisme qui fait que le compilateur
-    ne génère pas d'erreur en cas de problème de substitution des paramètres
-    templates. Ce mécanisme permet, entre autre, l'implémentation de la
-    fonctionnalité d'activation des templates (\texttt{std::enable\_if});
-  },
-  first={SFINAE (Substitution Failure Is Not An Error)}
-}
-
 \newglossaryentry{hh}{
   name=Hedgehog,
   description={
     C++ library that uses data-flow graphs to run multithreaded code.
   }
+}
+
+\newglossaryentry{hmbe}{
+  name=HMBE,
+  description={
+    (HTGS Model-based engine), C++ library that uses data-flow graphs to run
+    multithreaded code. It is the ancestor of Hedgehog.
+  },
+  first={HMBE (HTGS Model-based engine)}
+}
+
+\newglossaryentry{htgs}{
+  name=HTGS,
+  description={
+    (Hybrid Task Graphs Scheduler), abstract execution model used to schedule
+    multithreaded task.
+  },
+  first={HMBE (HTGS Model-based engine)}
 }
 
 \newglossaryentry{fds}{

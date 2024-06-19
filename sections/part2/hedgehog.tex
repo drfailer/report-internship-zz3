@@ -3,5 +3,70 @@
 %------------------------------------------------------------------------------%
 
 \section{Hedgehog}
+\label{sec:hh}
 
-TODO
+\gls{hh} is a template library that uses data-flow graphs to create
+parallel algorithms \cite{bardakoff2021analysis}. The library is the direct
+descendent of \gls{hmbe} that also uses data-flow graphs
+\cite{blattner2017model}.
+
+In this section, we will present some of the features of the library and how
+we can use it to express an algorithm under the form of a graph.
+
+\subsection{The data-flow graphs}
+
+As we have explained in the introduction of this section, we need to express our
+algorithms under the form of data-flow graphs. A data-flow graph is a graph
+where edges represent data streams and vertices represent tasks
+\cite{kavi1986formal} and \cite{bardakoff2021analysis}.
+
+% TODO figure
+
+In each task, the inputted data will be transformed into new data that will be
+the input of other tasks. In \gls{hh}, the data are transmitted between nodes
+using shared pointers in order to be as efficient as possible even with big
+data types. % todo: reformulate
+
+\subsection{The nodes}
+
+To design an algorithm using Hedgehog, we have to create a graph in which are
+data will flow. A graph is composed of nodes of different kinds that we will
+describe in this section.
+
+\subsubsection{Tasks}
+
+The first type of nodes are the tasks. These nodes are made to be duplicated and
+ran in different threads. As all other nodes, a task can have multiple input and
+output types.
+
+\subsubsection{States}
+
+The states are special nodes that are only made for synchronisation and cannot
+be duplicated. They are thread safe and can be used to control the data-flow in
+the graph. We have to be careful when creating a state as it locks the program
+using a mutex. This means that only simple operations have to be made in the
+states in order not to slow the program execution.
+
+% example
+
+\subsubsection{State managers}
+
+One of the most interesting features of \gls{hh} is the fact that it allows the
+creating of cycles in the graphs. This is particularly useful when we want to
+repeat an operation multiple times. However, it is not possible to automatically
+detect when we can break the cycle at runtime. This has to be specified by the
+user using a state manager.
+
+% todo
+
+% example
+
+\subsubsection{Graphs}
+
+The graph itself is a node as well which means that we can use a graph in
+another one. In a graph, we can create edges between different nodes in order
+form them to be able to communicate.
+
+% example
+
+\subsection{Example}
