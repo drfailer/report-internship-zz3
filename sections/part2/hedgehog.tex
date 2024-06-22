@@ -67,6 +67,7 @@ of input types (in this example, we have two input types) and it is followed by
 the list of the input types (T3 and T6) and the list of the output types (T4).
 
 %- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
 \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
   class C: public hh::AbstractTask<2, T6, T3, T4> {
   public:
@@ -91,6 +92,7 @@ the list of the input types (T3 and T6) and the list of the output types (T4).
 \end{minted}
 \captionof{listing}{Hedgehog: Task}
 \label{lst:hhtask}
+\end{listing}
 %- end listing --------------------------------------------------------------}}}
 
 \subsubsection{States}
@@ -135,6 +137,7 @@ parameters of the \texttt{StateManager} should be equal to the one of the
 state.
 
 %- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
 \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
   class MySM: public hh::StateManager<1, T1, T2, T3, T4> {
   public:
@@ -151,6 +154,7 @@ state.
 \end{minted}
 \captionof{listing}{Hedgehog: state manager}
 \label{lst:statemanager}
+\end{listing}
 %- end listing --------------------------------------------------------------}}}
 
 \subsubsection{Graphs}
@@ -159,12 +163,65 @@ The graph itself is a node as well which means that we can use a graph in
 another one. In a graph, we can create edges between different nodes in order
 form them to be able to communicate.
 
-%- begin listing ------------------------------------------------------------{{{
-\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+The listing \ref{lst:graph} shows an example of a graph creation. Here we can
+see that we create some nodes (task and states) and we construct the graph by
+creating edges between nodes. For instance, at the line 12, we create an edge
+between \texttt{myTask1} and \texttt{myTask2}, which means that the task one
+(the sender) will output data to the task two (the receiver). To be able to
+create an edge between two nodes, they must share at least one type (if task one
+outputs a data of type \texttt{T1}, the task two should acept this type as
+input). As all the other nodes, the graph as inputs and outputs, and we can use
+the corresponding methods to specify which node will be used to receive or send
+the data.
 
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+class MyGraph: public hh::Graph<1, T1, T2> {
+  public:
+    GaussGraph(size_t matrixHeight, size_t nbThreads):
+        hh::Graph<1, T1, T2>("My Graph") {
+      auto myTask1 = std::make_shared<MyTask1>(/* nbThreads, ... */);
+      auto myTask2 = std::make_shared<MyTask2>(/* nbThreads, ... */);
+      auto myState = std::make_shared<MySate>(/* ... */);
+      auto myStateManager = std::make_shared<MySM>(myState);
+
+      this->inputs(myTask1);
+      this->edges(mayTask1, myTaks2);
+      this->edges(mayTask1, myStateManager);
+      this->edges(mayTask2, myStateManager);
+      this->edges(myStateManager, mayTask2);
+      this->outputs(myStateManager);
+    }
+};
 \end{minted}
 \captionof{listing}{Hedgehog: graph}
 \label{lst:graph}
+\end{listing}
 %- end listing --------------------------------------------------------------}}}
+
+The graph class can be used to instanciate a graph to which we can push some
+data as shown on the listing \ref{lstgraphusage}. Once all the objects have been
+pushed to the graph, we use the function \texttt{finishPushingData} to start the
+computation, and we wait for the result.
+
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+MyGraph myGraph;
+
+myGraph.executeGraph();
+myGraph.pushData(/* ... */);
+myGraph.finishPushingData();
+myGraph.waitForTermination();
+\end{minted}
+\caption{Hedgehog: using a graph}
+\label{lst:graphusage}
+\end{listing}
+%- end listing --------------------------------------------------------------}}}
+
+\subsection{Profiling}
+
+% example of dot file
 
 \subsection{Example}
