@@ -1,0 +1,15 @@
+digraph {
+  Input -> A [label=T1];
+  Input -> D [label=T5];
+
+  A -> B [label=T2];
+  B -> C [label=T3];
+  D -> C [label=T6];
+  C -> E [label=T4];
+  D -> E [label=T7];
+
+  E -> Output [label=T8];
+
+  {rankdir=LR; rank = same; A; B; C;}
+  {rankdir=LR; rank = same; Input; D; E; Output;}
+}
