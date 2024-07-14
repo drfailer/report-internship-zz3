@@ -34,7 +34,7 @@ $D$ is a diagonal block, $C$ is a column (composed of multiple blocks) and $A'$
 is a sub-matrix.
 
 % [Cholesky decomposition] {{{
-\begin{figure}[h!]
+\begin{figure}[!ht]
   \begin{center}
     \includegraphics[scale=0.4]{img/cho_block_dec_A.png}
     \caption{Cholesky decomposition: matrix A}
@@ -53,10 +53,11 @@ by doing $A' = A' - CC^{T}$.
 
 Once we have obtained the matrix $L$, we can proceed to the solving part to find
 the solutions of the system. It can be decomposed in two steps: first, we solve
-the equation with the diagonal block, then we update the rest of the matrix
-using the partial solution (we remove the variables from the equation). We
-repeat these steps for each diagonal blocks to solve a sub-problem. The solver
-must be used twice to solve the two sub-systems.
+the equation with the diagonal block, then we update the rest of the matrix and
+the result vector using the partial solution (we remove the variables from the
+equation). We repeat these steps for each diagonal blocks to solve a
+sub-problem. The solver must be used twice to solve the two sub-problems  $Lx' =
+y$ and $L^{T}x = x'$.
 
 \subsection{Implementation}
 
@@ -72,17 +73,34 @@ similarly to openblas. This graph is visible on the figure \ref{fig:chograph}.
 
 %todo: graph
 % [Cholesky decomposition graph] {{{
-\begin{figure}[h!]
+\begin{figure}[!ht]
   \begin{center}
-    \includegraphics[scale=0.2]{img/cho_graph.png}
+    \includegraphics[scale=0.3]{img/decompose_graph.png}
     \caption{Cholesky decomposition graph}
     \label{fig:chograph}
   \end{center}
 \end{figure}
 %}}}
 
-%todo: explain the tasks
-%todo: explain data
+On this diagram, the tasks and the states are represented by the bold rectangles
+and the data by the regular rectangles. There are two kinds of datas that flow
+into this graph. The first kind is the \texttt{Matrix} that is the input of the
+graph and the second kind is the matrix blocks represented by the block's
+identifier between \texttt{'[]'}. The matrix is given to the \texttt{Split Task}
+that generates the blocks. The blocks have identifiers, which define their
+types. These identifiers are used to send the right blocks to the right task (or
+state). For instance, when the \texttt{Decompose State} sends a
+\texttt{Diagonal} block, it is transferd to the \texttt{Compute Diagonal Block
+Task}. We might see the execution of this graph as follows:
+
+\begin{enumerate}
+  \item Split the matrix into blocks (\texttt{Split Matrix Task}).
+  \item Compute the diagonal element \textbf{C} (\texttt{Compute Diagonal Block Task}).
+  \item Compute the elements on the column \textbf{D} (\texttt{Compute Column Block Task}).
+  \item Update the sub-matrix \textbf{A'} (\texttt{Update State / Task}).
+  \item Restart from 2 with the blocks of \textbf{A'} (and send the result
+    blocks).
+\end{enumerate}
 
 This first solution was too slow since we were executing the three steps
 sequentially (this is also what is done in openblas). By doing so, we were
@@ -101,7 +119,8 @@ increased. When the rank of a block is equal to its column number, it is ready
 to be processed, and it is processed when its rank is superior to its column
 number. The states use pending lists to store indices of blocks that should be
 processed, and iterate on these lists to launch the computation of all ready
-blocks.
+blocks. The graph concerves the same structure, but the operations in the state
+have been drastically changed.
 
 In this second version, there are a lot of verifications to make, using the rank
 in the states. Furthermore, both of the states have a vector of block pointers
@@ -110,7 +129,7 @@ changes a rank, the \textit{update state} can be aware of the modification
 directly, without any notification. This improves the performances but adds more
 complexity in the states.
 
-Eventually, we managed to have good performances with this second version
+Eventually, we managed to have good performances with this second version since
 openblas does not make any early computation. We will describe our results in
 the section \ref{sec:chores}.
 
@@ -120,7 +139,7 @@ sub-system of the matrix. The graph can be seen on the figure
 
 %todo: solver graph
 % [Solver graph] {{{
-\begin{figure}[h!]
+\begin{figure}[!ht]
   \begin{center}
     \includegraphics[scale=0.2]{img/solver_graph.img}
     \caption{Solver graph}
@@ -130,16 +149,138 @@ sub-system of the matrix. The graph can be seen on the figure
 %}}}
 %todo: explain the solver graph
 
-In this graph we use the same matrix blocks as in the decomposition graph, so
-we can start the solving directly when the blocks are decomposed. The hole
-principle of \gls{hh} is to allow the creation of pipelines in which the data
-flow continuously, so we do not have any barrier between the tasks. Here, we do
-not have to finish the decomposition entirely to start solving the blocks. This
-helps keeping as much parallelism as possible and always use the biggest amount
-of the computer's resources. In other words, if we represented the computation
-time between the logical cores in a Gantt diagram, we would like to optimize the
-overlap between tasks and have as little gaps as possible (the cores should
-not be in a wait state for too long, at all ideally).
+In this graph we use the same matrix blocks as in the decomposition graph, so we
+can start the solving part directly when the decomposition graph outputs the
+first result block. The hole principle of \gls{hh} is to allow the creation of
+pipelines in which the datas flow continuously, so we avoid having unecessary
+barriers\footnote{Points in the program where we have to wait for the
+termination of task to start the next one} in the process. Here, we do not have
+to finish the decomposition entirely to start solving the blocks. This helps
+keeping as much parallelism as possible and always use the biggest amount of the
+computer's resources. In other words, if we represented the computation time
+between the logical cores in a Gantt diagram, we would like to optimize the
+overlap between tasks and have as little gaps as possible (the cores should not
+be in a wait state for too long, at all ideally).
 
+\clearpage{}
 \subsection{The results}
 \label{sec:chores}
+
+Now that we have explained the algorithm and its implementation, we will analyse
+the results of the measures on the decomposition algorithm that have been done
+using the openblas's implementation hand the \gls{hh}'s one. Two sets of
+measures have been made on cluster node with 192 CPU cores. For the first set,
+the problem size was 40000 and the program has been run with a maximum number of
+threads of 256. For the second set, we used a 100000 matrix and a maximum number
+threads of 384 (all the cores). On each problem, we were measuring the
+computation times of the two algorithm for different number of threads (from 1
+to the maximum) in order to see the relative speedup. For \gls{hh}, the number
+of threads was changed only for the most critical task (the update task). It was
+fixed to the optimal numbers for the other tasks (these numbers were found by
+doing first tests measures beforehand).\\
+
+First, we can analyse the measures made on the 40000 matrix. The figure
+\ref{fig:40000graph} is the graph that is generated at the end of the program
+using \gls{hh}'s profiling tool. Here we can see that the bottleneck of the
+program is effectively the update task as we have explained before. We can see
+as well that only one thread was allocated to the diagonal task and 12 were
+allocated to the column task. The diagonal does not require more that one thread
+since it never have more than one block (this is shown by the maximum queue size
+\texttt{MQS} on the rectangle before the task). For the column task, we can see
+that it is relatively slow (if we look at the color). We could put more threads
+on it, but we have to make sure that we keep enough resources for the update
+task.
+
+% [Hedgehog graph for the 40000 matrix] {{{
+\begin{figure}[!ht]
+  \begin{center}
+    \includegraphics[scale=0.15]{img/40000.png}
+    \caption{Hedgehog graph for the 40000 matrix}
+    \label{fig:40000graph}
+  \end{center}
+\end{figure}
+%}}}
+
+On the figures \ref{fig:time40000} and \ref{fig:speedups40000} we see the
+computation times of the two implementations and the speedup of the \gls{hh}'s
+version compared to the openblas's one for the 40000 matrix. Here, we can
+observe a very interesting behavior of the openblas program. As we increase the
+number threads, the \gls{hh} program keeps scaling but the openblas's one become
+unstable around a hundred threads. A possible explanation for this is that
+openblas is optimized for non-hyper-threaded configurations. For these measures,
+we had allocated 256 threads on the cluster which means that we could have used
+1 thread per core till more than 128 threads was allocated to the program. This
+number is quite close to the point where we start to see instability on the
+openblas's measures.
+
+\begin{figure}[!htb]
+  \begin{minipage}{0.48\linewidth}
+    \centering
+    \includegraphics[scale=0.5]{img/times-40000.png}
+    \caption{Computation times for a 40000 matrix}
+    \label{fig:time40000}
+  \end{minipage}\hfill
+  \begin{minipage}{0.48\linewidth}
+    \centering
+    \includegraphics[scale=0.5]{img/speedup-40000.png}
+    \caption{Speedups for a 40000 matrix (hedgehog / openblas)}
+    \label{fig:speedups40000}
+  \end{minipage}
+\end{figure}
+
+The figure \ref{fig:relativespeedup40000} shows the relative speedup for each
+program ($\frac{time_{one_thread}}{time_{n_thread}}$). As we can see, we do not
+have a very big speedup for both of the programs. This can be explained by the
+fact the current problem is too small, so we do not exploit the resources as
+well as we should. For this reason, we have made more measures with a bigger
+problem.
+
+% [Relative speedups for a 40000 matrix] {{{
+\begin{figure}[!ht]
+  \begin{center}
+    \includegraphics[scale=0.8]{img/relative-speedup-40000.png}
+    \caption{Relative speedups for a 40000 matrix}
+    \label{fig:relativespeedup40000}
+  \end{center}
+\end{figure}
+%}}}
+
+The second set of measures was using a 100000 by 100000 matrix, and we went up to
+384 threads. On the figure \ref{fig:time100000} and \ref{fig:speedups100000} we
+can see the computation times of the two implementations as well as the speedup
+of \gls{hh} against openblas as we have seen previously. These two plots shows
+similar results than the previous ones.
+
+\begin{figure}[!htb]
+  \begin{minipage}{0.48\linewidth}
+    \centering
+    \includegraphics[scale=0.5]{img/times-100000.png}
+    \caption{Computation times for a 100000 matrix}
+    \label{fig:time100000}
+  \end{minipage}\hfill
+  \begin{minipage}{0.48\linewidth}
+    \centering
+    \includegraphics[scale=0.5]{img/speedup-100000.png}
+    \caption{Speedups for a 100000 matrix (hedgehog / openblas)}
+    \label{fig:speedups100000}
+  \end{minipage}
+\end{figure}
+
+On the figure \ref{fig:relativespeedup100000} we can see that we have a way
+better relative speedup for the two algorithms. This means that the resources
+are better exploited with a bigger problem.
+
+% [Relative speedups for a 100000 matrix] {{{
+\begin{figure}[!ht]
+  \begin{center}
+    \includegraphics[scale=0.8]{img/relative-speedup-100000.png}
+    \caption{Relative speedups for a 100000 matrix}
+    \label{fig:relativespeedup100000}
+  \end{center}
+\end{figure}
+%}}}
+
+Eventually, we managed to have better performances than openblas by doing more
+early computation. Furthermore, the program is still readable and easy to
+understand. This demonstrates how good is the data-flow graph approach is in
+parallel computing as well as the power of the \gls{hh} library.
