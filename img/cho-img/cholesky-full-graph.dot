@@ -1,0 +1,110 @@
+digraph x0x64d419d5bd90 {
+label="Cholesky\nExecution duration:66.958s\nCreation duration:59.641ms"; fontsize=25; penwidth=5; labelloc=top; labeljust=left;
+x0x64d419d64180 [label="Source", shape=invhouse];
+x0x64d419fc3f50 [label="Sink", shape=point];
+x0x64d419d5ddf0 [label="Split matrix task\nElements: 2
+Wait Time: 619.104us\nDequeue+Exec: 4.533ms\nExec: 2.264ms\n",shape=rect,color="#0000ff", penwidth=3, style=filled, fillcolor="#ffffffff", fontcolor="#000000ff"];
+subgraph clusterx0x64d419d8d4c0 {
+label="Cholesky Solver phase 2"; fontsize=25; penwidth=5; fillcolor="#ffffffff";
+x0x64d419d6b630 [label="Solver State Manager\nElements: 9800\nWait: 66.840s\nLock state: 1.146ms\nEmpty ready list: 71.067ms\nDequeue+Exec: 65.747ms\nExec/Element: 3.489us",shape=rect,color="#0001ff", penwidth=3, style=filled, fillcolor="#ffffffff", fontcolor="#000000ff"];
+x0x64d419faf300 [label="Update Vector task x 100\nElements: Min: 36 / Avg: 47.53 +- 5.49628 / Max: 60
+Wait Time: Min: 66.534s / Avg: 66.634s +- 41.982ms / Max: 66.725s\nDequeue+Exec: Min: 263.477ms / Avg: 357.993ms +- 41.742ms / Max: 452.890ms\nExec:   Min: 5.330ms / Avg: 7.668ms +- 1.517ms / Max: 11.915ms\n",shape=rect,color="#0006ff", penwidth=3, style=filled, fillcolor="#ffffffff", fontcolor="#000000ff"];
+x0x64d419faf9b0 [label="Solve Diagonal Task x 384\nElements: Min: 0 / Avg: 0.255208 +- 0.507726 / Max: 3
+Wait Time: Min: 66.968s / Avg: 66.992s +- 6.274ms / Max: 67.001s\nDequeue+Exec: Min: 0ns / Avg: 582.153us +- 2.236ms / Max: 30.441ms\nExec:   Min: 0ns / Avg: 497.279us +- 1.947ms / Max: 30.436ms\n",shape=rect,color="#0000ff", penwidth=3, style=filled, fillcolor="#ffffffff", fontcolor="#000000ff"];
+"edgex0x64d419d6b630MatrixBlockData<double, Decomposed>"[label="MatrixBlockData<double, Decomposed>\nQS=0\nMQS=3", shape=rect];
+"edgex0x64d419d6b630MatrixBlockData<double, VectorBlockPhase1>"[label="MatrixBlockData<double, VectorBlockPhase1>\nQS=0\nMQS=1", shape=rect];
+"edgex0x64d419d6b630MatrixBlockData<double, Vector>"[label="MatrixBlockData<double, Vector>\nQS=0\nMQS=1", shape=rect];
+"edgex0x64d419d6b630MatrixBlockData<double, Updated>"[label="MatrixBlockData<double, Updated>\nQS=0\nMQS=62", shape=rect];
+"edgex0x64d419faf300TripleBlockData<double, Column, Vector, Vector>"[label="TripleBlockData<double, Column, Vector, Vector>\nQS=0\nMQS=14", shape=rect];
+"edgex0x64d419faf9b0std::pair<std::shared_ptr<MatrixBlockData<double, Diagonal> >, std::shared_ptr<MatrixBlockData<double, Vector> > >"[label="std::pair<std::shared_ptr<MatrixBlockData<double, Diagonal> >, std::shared_ptr<MatrixBlockData<double, Vector> > >\nQS=0\nMQS=1", shape=rect];
+}
+subgraph clusterx0x64d419db4ac0 {
+label="Cholesky Solver phase 1"; fontsize=25; penwidth=5; fillcolor="#ffffffff";
+x0x64d419d72270 [label="Solver State Manager\nElements: 9800\nWait: 65.574s\nLock state: 1.377ms\nEmpty ready list: 159.848ms\nDequeue+Exec: 145.064ms\nExec/Element: 10.873us",shape=rect,color="#0002ff", penwidth=3, style=filled, fillcolor="#ffffffff", fontcolor="#000000ff"];
+x0x64d419fae4d0 [label="Update Vector task x 100\nElements: Min: 44 / Avg: 47.53 +- 1.652 / Max: 51
+Wait Time: Min: 65.529s / Avg: 65.597s +- 24.824ms / Max: 65.646s\nDequeue+Exec: Min: 251.022ms / Avg: 297.742ms +- 23.577ms / Max: 378.091ms\nExec:   Min: 5.420ms / Avg: 6.259ms +- 452.783us / Max: 7.472ms\n",shape=rect,color="#0004ff", penwidth=3, style=filled, fillcolor="#ffffffff", fontcolor="#000000ff"];
+x0x64d419fbbaf0 [label="Solve Diagonal Task x 384\nElements: Min: 0 / Avg: 0.255208 +- 0.464886 / Max: 2
+Wait Time: Min: 65.874s / Avg: 65.898s +- 6.889ms / Max: 65.905s\nDequeue+Exec: Min: 0ns / Avg: 1.369ms +- 3.115ms / Max: 19.539ms\nExec:   Min: 0ns / Avg: 1.284ms +- 2.846ms / Max: 14.717ms\n",shape=rect,color="#0000ff", penwidth=3, style=filled, fillcolor="#ffffffff", fontcolor="#000000ff"];
+"edgex0x64d419d72270MatrixBlockData<double, Decomposed>"[label="MatrixBlockData<double, Decomposed>\nQS=0\nMQS=3", shape=rect];
+"edgex0x64d419d72270MatrixBlockData<double, VectorBlock>"[label="MatrixBlockData<double, VectorBlock>\nQS=0\nMQS=97", shape=rect];
+"edgex0x64d419d72270MatrixBlockData<double, Vector>"[label="MatrixBlockData<double, Vector>\nQS=0\nMQS=1", shape=rect];
+"edgex0x64d419d72270MatrixBlockData<double, Updated>"[label="MatrixBlockData<double, Updated>\nQS=0\nMQS=3", shape=rect];
+"edgex0x64d419fae4d0TripleBlockData<double, Column, Vector, Vector>"[label="TripleBlockData<double, Column, Vector, Vector>\nQS=0\nMQS=3", shape=rect];
+"edgex0x64d419fbbaf0std::pair<std::shared_ptr<MatrixBlockData<double, Diagonal> >, std::shared_ptr<MatrixBlockData<double, Vector> > >"[label="std::pair<std::shared_ptr<MatrixBlockData<double, Diagonal> >, std::shared_ptr<MatrixBlockData<double, Vector> > >\nQS=0\nMQS=1", shape=rect];
+}
+subgraph clusterx0x64d419fb0c00 {
+label="Cholesky Decomposition"; fontsize=25; penwidth=5; fillcolor="#ffffffff";
+x0x64d419d601d0 [label="Decompose State Manager\nElements: 166551\nWait: 49.558s\nLock state: 11.896ms\nEmpty ready list: 15.561s\nDequeue+Exec: 606.204ms\nExec/Element: 1.452us",shape=rect,color="#0009ff", penwidth=3, style=filled, fillcolor="#ffffffff", fontcolor="#000000ff"];
+x0x64d419d65520 [label="Update Submatrix State Manager\nElements: 166453\nWait: 51.859s\nLock state: 12.244ms\nEmpty ready list: 3.122s\nDequeue+Exec: 10.636s\nExec/Element: 60.847us",shape=rect,color="#00acff", penwidth=3, style=filled, fillcolor="#ffffffff", fontcolor="#000000ff"];
+x0x64d419fb9ba0 [label="Compute Diagonal Block Task\nElements: 98
+Wait Time: 62.327s\nDequeue+Exec: 3.542s\nExec: 36.139ms\n",shape=rect,color="#0039ff", penwidth=3, style=filled, fillcolor="#ffffffff", fontcolor="#000000ff"];
+x0x64d419fba5e0 [label="Compute Column Block Task x 24\nElements: Min: 156 / Avg: 198.042 +- 23.4725 / Max: 246
+Wait Time: Min: 46.748s / Avg: 50.755s +- 1.764s / Max: 53.230s\nDequeue+Exec: Min: 12.636s / Avg: 15.112s +- 1.764s / Max: 19.118s\nExec:   Min: 69.174ms / Avg: 76.427ms +- 4.037ms / Max: 83.790ms\n",shape=rect,color="#00fffd", penwidth=3, style=filled, fillcolor="#ffffffff", fontcolor="#000000ff"];
+x0x64d419fbb0c0 [label="Update Submatrix Block Task x 232\nElements: Min: 455 / Avg: 676.073 +- 203.534 / Max: 990
+Wait Time: Min: 3.090s / Avg: 3.699s +- 188.494ms / Max: 4.098s\nDequeue+Exec: Min: 61.770s / Avg: 62.173s +- 188.612ms / Max: 62.777s\nExec:   Min: 62.671ms / Avg: 100.550ms +- 28.871ms / Max: 136.192ms\n",shape=rect,color="#ff0800", penwidth=3, style=filled, fillcolor="#ffffffff", fontcolor="#000000ff"];
+"edgex0x64d419d601d0MatrixBlockData<double, MatrixBlock>"[label="MatrixBlockData<double, MatrixBlock>\nQS=0\nMQS=4803", shape=rect];
+"edgex0x64d419d601d0MatrixBlockData<double, Diagonal>"[label="MatrixBlockData<double, Diagonal>\nQS=0\nMQS=1", shape=rect];
+"edgex0x64d419d601d0MatrixBlockData<double, Column>"[label="MatrixBlockData<double, Column>\nQS=0\nMQS=14", shape=rect];
+"edgex0x64d419d601d0MatrixBlockData<double, Updated>"[label="MatrixBlockData<double, Updated>\nQS=0\nMQS=95", shape=rect];
+"edgex0x64d419d65520MatrixBlockData<double, MatrixBlock>"[label="MatrixBlockData<double, MatrixBlock>\nQS=0\nMQS=672", shape=rect];
+"edgex0x64d419d65520MatrixBlockData<double, Column>"[label="MatrixBlockData<double, Column>\nQS=0\nMQS=11", shape=rect];
+"edgex0x64d419d65520MatrixBlockData<double, Updated>"[label="MatrixBlockData<double, Updated>\nQS=0\nMQS=62", shape=rect];
+"edgex0x64d419fb9ba0MatrixBlockData<double, Diagonal>"[label="MatrixBlockData<double, Diagonal>\nQS=0\nMQS=1", shape=rect];
+"edgex0x64d419fba5e0std::pair<std::shared_ptr<MatrixBlockData<double, Diagonal> >, std::shared_ptr<MatrixBlockData<double, MatrixBlock> > >"[label="std::pair<std::shared_ptr<MatrixBlockData<double, Diagonal> >, std::shared_ptr<MatrixBlockData<double, MatrixBlock> > >\nQS=0\nMQS=47", shape=rect];
+"edgex0x64d419fbb0c0TripleBlockData<double, MatrixBlock, MatrixBlock, MatrixBlock>"[label="TripleBlockData<double, MatrixBlock, MatrixBlock, MatrixBlock>\nQS=0\nMQS=4359", shape=rect];
+}
+"edgex0x64d419fc3f50MatrixBlockData<double, Result>"[label="MatrixBlockData<double, Result>\nQS=98\nMQS=98", shape=rect];
+"edgex0x64d419d5ddf0MatrixData<double, MatrixTypes::Matrix>"[label="MatrixData<double, MatrixTypes::Matrix>\nQS=0\nMQS=1", shape=rect];
+"edgex0x64d419d5ddf0MatrixData<double, MatrixTypes::Vector>"[label="MatrixData<double, MatrixTypes::Vector>\nQS=0\nMQS=1", shape=rect];
+"x0x64d419d6b630" -> "edgex0x64d419fc3f50MatrixBlockData<double, Result>"[penwidth=1, dir=none];
+"edgex0x64d419fc3f50MatrixBlockData<double, Result>" -> "x0x64d419fc3f50"[penwidth=1];
+"x0x64d419d64180" -> "edgex0x64d419d5ddf0MatrixData<double, MatrixTypes::Matrix>"[penwidth=1, dir=none];
+"edgex0x64d419d5ddf0MatrixData<double, MatrixTypes::Matrix>" -> "x0x64d419d5ddf0"[penwidth=1];
+"x0x64d419d64180" -> "edgex0x64d419d5ddf0MatrixData<double, MatrixTypes::Vector>"[penwidth=1, dir=none];
+"edgex0x64d419d5ddf0MatrixData<double, MatrixTypes::Vector>" -> "x0x64d419d5ddf0"[penwidth=1];
+"x0x64d419d601d0" -> "edgex0x64d419d6b630MatrixBlockData<double, Decomposed>"[penwidth=1, dir=none];
+"edgex0x64d419d6b630MatrixBlockData<double, Decomposed>" -> "x0x64d419d6b630"[penwidth=1];
+"x0x64d419d72270" -> "edgex0x64d419d6b630MatrixBlockData<double, VectorBlockPhase1>"[penwidth=1, dir=none];
+"edgex0x64d419d6b630MatrixBlockData<double, VectorBlockPhase1>" -> "x0x64d419d6b630"[penwidth=1];
+"x0x64d419faf9b0" -> "edgex0x64d419d6b630MatrixBlockData<double, Vector>"[penwidth=1, dir=none];
+"edgex0x64d419d6b630MatrixBlockData<double, Vector>" -> "x0x64d419d6b630"[penwidth=1];
+"x0x64d419faf300" -> "edgex0x64d419d6b630MatrixBlockData<double, Updated>"[penwidth=1, dir=none];
+"edgex0x64d419d6b630MatrixBlockData<double, Updated>" -> "x0x64d419d6b630"[penwidth=1];
+"x0x64d419d6b630" -> "edgex0x64d419faf300TripleBlockData<double, Column, Vector, Vector>"[penwidth=1, dir=none];
+"edgex0x64d419faf300TripleBlockData<double, Column, Vector, Vector>" -> "x0x64d419faf300"[penwidth=1];
+"x0x64d419d6b630" -> "edgex0x64d419faf9b0std::pair<std::shared_ptr<MatrixBlockData<double, Diagonal> >, std::shared_ptr<MatrixBlockData<double, Vector> > >"[penwidth=1, dir=none];
+"edgex0x64d419faf9b0std::pair<std::shared_ptr<MatrixBlockData<double, Diagonal> >, std::shared_ptr<MatrixBlockData<double, Vector> > >" -> "x0x64d419faf9b0"[penwidth=1];
+"x0x64d419d601d0" -> "edgex0x64d419d72270MatrixBlockData<double, Decomposed>"[penwidth=1, dir=none];
+"edgex0x64d419d72270MatrixBlockData<double, Decomposed>" -> "x0x64d419d72270"[penwidth=1];
+"x0x64d419d5ddf0" -> "edgex0x64d419d72270MatrixBlockData<double, VectorBlock>"[penwidth=1, dir=none];
+"edgex0x64d419d72270MatrixBlockData<double, VectorBlock>" -> "x0x64d419d72270"[penwidth=1];
+"x0x64d419fbbaf0" -> "edgex0x64d419d72270MatrixBlockData<double, Vector>"[penwidth=1, dir=none];
+"edgex0x64d419d72270MatrixBlockData<double, Vector>" -> "x0x64d419d72270"[penwidth=1];
+"x0x64d419fae4d0" -> "edgex0x64d419d72270MatrixBlockData<double, Updated>"[penwidth=1, dir=none];
+"edgex0x64d419d72270MatrixBlockData<double, Updated>" -> "x0x64d419d72270"[penwidth=1];
+"x0x64d419d72270" -> "edgex0x64d419fae4d0TripleBlockData<double, Column, Vector, Vector>"[penwidth=1, dir=none];
+"edgex0x64d419fae4d0TripleBlockData<double, Column, Vector, Vector>" -> "x0x64d419fae4d0"[penwidth=1];
+"x0x64d419d72270" -> "edgex0x64d419fbbaf0std::pair<std::shared_ptr<MatrixBlockData<double, Diagonal> >, std::shared_ptr<MatrixBlockData<double, Vector> > >"[penwidth=1, dir=none];
+"edgex0x64d419fbbaf0std::pair<std::shared_ptr<MatrixBlockData<double, Diagonal> >, std::shared_ptr<MatrixBlockData<double, Vector> > >" -> "x0x64d419fbbaf0"[penwidth=1];
+"x0x64d419d5ddf0" -> "edgex0x64d419d601d0MatrixBlockData<double, MatrixBlock>"[penwidth=1, dir=none];
+"edgex0x64d419d601d0MatrixBlockData<double, MatrixBlock>" -> "x0x64d419d601d0"[penwidth=1];
+"x0x64d419fb9ba0" -> "edgex0x64d419d601d0MatrixBlockData<double, Diagonal>"[penwidth=1, dir=none];
+"edgex0x64d419d601d0MatrixBlockData<double, Diagonal>" -> "x0x64d419d601d0"[penwidth=1];
+"x0x64d419fba5e0" -> "edgex0x64d419d601d0MatrixBlockData<double, Column>"[penwidth=1, dir=none];
+"edgex0x64d419d601d0MatrixBlockData<double, Column>" -> "x0x64d419d601d0"[penwidth=1];
+"x0x64d419fbb0c0" -> "edgex0x64d419d601d0MatrixBlockData<double, Updated>"[penwidth=1, dir=none];
+"edgex0x64d419d601d0MatrixBlockData<double, Updated>" -> "x0x64d419d601d0"[penwidth=1];
+"x0x64d419d601d0" -> "edgex0x64d419d65520MatrixBlockData<double, MatrixBlock>"[penwidth=1, dir=none];
+"edgex0x64d419d65520MatrixBlockData<double, MatrixBlock>" -> "x0x64d419d65520"[penwidth=1];
+"x0x64d419d601d0" -> "edgex0x64d419d65520MatrixBlockData<double, Column>"[penwidth=1, dir=none];
+"edgex0x64d419d65520MatrixBlockData<double, Column>" -> "x0x64d419d65520"[penwidth=1];
+"x0x64d419d601d0" -> "edgex0x64d419d65520MatrixBlockData<double, Updated>"[penwidth=1, dir=none];
+"edgex0x64d419d65520MatrixBlockData<double, Updated>" -> "x0x64d419d65520"[penwidth=1];
+"x0x64d419d601d0" -> "edgex0x64d419fb9ba0MatrixBlockData<double, Diagonal>"[penwidth=1, dir=none];
+"edgex0x64d419fb9ba0MatrixBlockData<double, Diagonal>" -> "x0x64d419fb9ba0"[penwidth=1];
+"x0x64d419d601d0" -> "edgex0x64d419fba5e0std::pair<std::shared_ptr<MatrixBlockData<double, Diagonal> >, std::shared_ptr<MatrixBlockData<double, MatrixBlock> > >"[penwidth=1, dir=none];
+"edgex0x64d419fba5e0std::pair<std::shared_ptr<MatrixBlockData<double, Diagonal> >, std::shared_ptr<MatrixBlockData<double, MatrixBlock> > >" -> "x0x64d419fba5e0"[penwidth=1];
+"x0x64d419d65520" -> "edgex0x64d419fbb0c0TripleBlockData<double, MatrixBlock, MatrixBlock, MatrixBlock>"[penwidth=1, dir=none];
+"edgex0x64d419fbb0c0TripleBlockData<double, MatrixBlock, MatrixBlock, MatrixBlock>" -> "x0x64d419fbb0c0"[penwidth=1];
+}
+

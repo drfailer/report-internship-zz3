@@ -1,0 +1,68 @@
+digraph x0x64d419d5bd90 {
+label="Cholesky solver"; fontsize=25; penwidth=5; labelloc=top; labeljust=left;
+x0x64d419d64180 [label="Source", shape=invhouse];
+x0x64d419fc3f50 [label="Sink", shape=point];
+x0x64d419d5ddf0 [label="Split matrix task",shape=rect, penwidth=3];
+subgraph clusterx0x64d419d8d4c0 {
+label="Cholesky Solver phase 2"; fontsize=25; penwidth=5;
+x0x64d419d6b630 [label="Solver State Manager", shape=rect, penwidth=3];
+x0x64d419faf300 [label="Update Vector task", shape=rect, penwidth=3];
+x0x64d419faf9b0 [label="Solve Diagonal Task",shape=rect, penwidth=3];
+"edgex0x64d419d6b630[Decomposed]"[label="[Decomposed]", shape=rect];
+"edgex0x64d419d6b630[VectorBlockPhase1]"[label="[VectorBlockPhase1]", shape=rect];
+"edgex0x64d419d6b630[Vector]"[label="[Vector]", shape=rect];
+"edgex0x64d419d6b630[Updated]"[label="[Updated]", shape=rect];
+"edgex0x64d419faf300<Column, Vector, Vector>"[label="<Column, Vector, Vector>", shape=rect];
+"edgex0x64d419faf9b0<[Diagonal], [Vector]>"[label="<[Diagonal], [Vector]>", shape=rect];
+}
+subgraph clusterx0x64d419db4ac0 {
+label="Cholesky Solver phase 1"; fontsize=25; penwidth=5;
+x0x64d419d72270 [label="Solver State Manager", shape=rect, penwidth=3];
+x0x64d419fae4d0 [label="Update Vector task", shape=rect, penwidth=3];
+x0x64d419fbbaf0 [label="Solve Diagonal Task", shape=rect, penwidth=3];
+"edgex0x64d419d72270[Decomposed]"[label="[Decomposed]", shape=rect];
+"edgex0x64d419d72270[VectorBlock]"[label="[VectorBlock]", shape=rect];
+"edgex0x64d419d72270[Vector]"[label="[Vector]", shape=rect];
+"edgex0x64d419d72270[Updated]"[label="[Updated]", shape=rect];
+"edgex0x64d419fae4d0<Column, Vector, Vector>"[label="<Column, Vector, Vector>", shape=rect];
+"edgex0x64d419fbbaf0<[Diagonal], [Vector]>"[label="<[Diagonal], [Vector]>", shape=rect];
+}
+"decomposition_graph"[label="Decomposition Graph", shape=rect, penwidth=5, fillcolor="#f0f0f0ff", style=filled]
+"edgex0x64d419fc3f50[Result]"[label="[Result]", shape=rect];
+"edgex0x64d419d5ddf0Matrix<Matrix>"[label="Matrix<Matrix>", shape=rect];
+"edgex0x64d419d5ddf0Matrix<Vector>"[label="Matrix<Vector>", shape=rect];
+"x0x64d419d6b630" -> "edgex0x64d419fc3f50[Result]"[penwidth=1, dir=none];
+"edgex0x64d419fc3f50[Result]" -> "x0x64d419fc3f50"[penwidth=1];
+"x0x64d419d64180" -> "edgex0x64d419d5ddf0Matrix<Matrix>"[penwidth=1, dir=none];
+"edgex0x64d419d5ddf0Matrix<Matrix>" -> "x0x64d419d5ddf0"[penwidth=1];
+"x0x64d419d64180" -> "edgex0x64d419d5ddf0Matrix<Vector>"[penwidth=1, dir=none];
+"edgex0x64d419d5ddf0Matrix<Vector>" -> "x0x64d419d5ddf0"[penwidth=1];
+"decomposition_graph" -> "edgex0x64d419d6b630[Decomposed]"[penwidth=1, dir=none];
+"edgex0x64d419d6b630[Decomposed]" -> "x0x64d419d6b630"[penwidth=1];
+"x0x64d419d72270" -> "edgex0x64d419d6b630[VectorBlockPhase1]"[penwidth=1, dir=none];
+"edgex0x64d419d6b630[VectorBlockPhase1]" -> "x0x64d419d6b630"[penwidth=1];
+"x0x64d419faf9b0" -> "edgex0x64d419d6b630[Vector]"[penwidth=1, dir=none];
+"edgex0x64d419d6b630[Vector]" -> "x0x64d419d6b630"[penwidth=1];
+"x0x64d419faf300" -> "edgex0x64d419d6b630[Updated]"[penwidth=1, dir=none];
+"edgex0x64d419d6b630[Updated]" -> "x0x64d419d6b630"[penwidth=1];
+"x0x64d419d6b630" -> "edgex0x64d419faf300<Column, Vector, Vector>"[penwidth=1, dir=none];
+"edgex0x64d419faf300<Column, Vector, Vector>" -> "x0x64d419faf300"[penwidth=1];
+"x0x64d419d6b630" -> "edgex0x64d419faf9b0<[Diagonal], [Vector]>"[penwidth=1, dir=none];
+"edgex0x64d419faf9b0<[Diagonal], [Vector]>" -> "x0x64d419faf9b0"[penwidth=1];
+"decomposition_graph" -> "edgex0x64d419d72270[Decomposed]"[penwidth=1, dir=none];
+"edgex0x64d419d72270[Decomposed]" -> "x0x64d419d72270"[penwidth=1];
+"x0x64d419d5ddf0" -> "edgex0x64d419d72270[VectorBlock]"[penwidth=1, dir=none];
+"edgex0x64d419d72270[VectorBlock]" -> "x0x64d419d72270"[penwidth=1];
+"x0x64d419fbbaf0" -> "edgex0x64d419d72270[Vector]"[penwidth=1, dir=none];
+"edgex0x64d419d72270[Vector]" -> "x0x64d419d72270"[penwidth=1];
+"x0x64d419fae4d0" -> "edgex0x64d419d72270[Updated]"[penwidth=1, dir=none];
+"edgex0x64d419d72270[Updated]" -> "x0x64d419d72270"[penwidth=1];
+"x0x64d419d72270" -> "edgex0x64d419fae4d0<Column, Vector, Vector>"[penwidth=1, dir=none];
+"edgex0x64d419fae4d0<Column, Vector, Vector>" -> "x0x64d419fae4d0"[penwidth=1];
+"x0x64d419d72270" -> "edgex0x64d419fbbaf0<[Diagonal], [Vector]>"[penwidth=1, dir=none];
+"edgex0x64d419fbbaf0<[Diagonal], [Vector]>" -> "x0x64d419fbbaf0"[penwidth=1];
+"x0x64d419d5ddf0" -> "[Block]"[penwidth=1, dir=none];
+"[Block]"[shape=rect]
+"[Block]" -> "decomposition_graph"[penwidth=1, dir=none];
+}
+

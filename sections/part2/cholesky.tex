@@ -36,7 +36,7 @@ is a sub-matrix.
 % [Cholesky decomposition] {{{
 \begin{figure}[!ht]
   \begin{center}
-    \includegraphics[scale=0.4]{img/cho_block_dec_A.png}
+    \includegraphics[scale=0.4]{img/cho-img/cho_block_dec_A.png}
     \caption{Cholesky decomposition: matrix A}
     \label{fig:chodeca}
   \end{center}
@@ -71,11 +71,10 @@ The first implementation of the decomposition consisted of the creation of a
 graph that followed the steps describe in the section \ref{sec:choalgo}
 similarly to openblas. This graph is visible on the figure \ref{fig:chograph}.
 
-%todo: graph
 % [Cholesky decomposition graph] {{{
 \begin{figure}[!ht]
   \begin{center}
-    \includegraphics[scale=0.3]{img/decompose_graph.png}
+    \includegraphics[scale=0.3]{img/cho-img/decompose_graph.png}
     \caption{Cholesky decomposition graph}
     \label{fig:chograph}
   \end{center}
@@ -137,17 +136,22 @@ For the solver, we have a second graph that we use twice to solve the two
 sub-system of the matrix. The graph can be seen on the figure
 \ref{fig:solvergraph}.
 
-%todo: solver graph
 % [Solver graph] {{{
 \begin{figure}[!ht]
   \begin{center}
-    \includegraphics[scale=0.2]{img/solver_graph.img}
+    \includegraphics[scale=0.2]{img/cho-img/solver_graph.png}
     \caption{Solver graph}
     \label{fig:solvergraph}
   \end{center}
 \end{figure}
 %}}}
 %todo: explain the solver graph
+
+Here, we can see that there are two subgraphs for the solving part. These two
+graphs solve the two sub-problems that we described earlier. The fist solver is
+directly connected to the decomposition's graph, and it receives the decomposed
+block. Both of the solver graphs are connected to the split task, and they
+receive the splited vector blocks.
 
 In this graph we use the same matrix blocks as in the decomposition graph, so we
 can start the solving part directly when the decomposition graph outputs the
@@ -194,7 +198,7 @@ task.
 % [Hedgehog graph for the 40000 matrix] {{{
 \begin{figure}[!ht]
   \begin{center}
-    \includegraphics[scale=0.15]{img/40000.png}
+    \includegraphics[scale=0.15]{img/cho-img/40000.png}
     \caption{Hedgehog graph for the 40000 matrix}
     \label{fig:40000graph}
   \end{center}
@@ -216,13 +220,13 @@ openblas's measures.
 \begin{figure}[!htb]
   \begin{minipage}{0.48\linewidth}
     \centering
-    \includegraphics[scale=0.5]{img/times-40000.png}
+    \includegraphics[scale=0.5]{img/cho-img/times-40000.png}
     \caption{Computation times for a 40000 matrix}
     \label{fig:time40000}
   \end{minipage}\hfill
   \begin{minipage}{0.48\linewidth}
     \centering
-    \includegraphics[scale=0.5]{img/speedup-40000.png}
+    \includegraphics[scale=0.5]{img/cho-img/speedup-40000.png}
     \caption{Speedups for a 40000 matrix (hedgehog / openblas)}
     \label{fig:speedups40000}
   \end{minipage}
@@ -238,7 +242,7 @@ problem.
 % [Relative speedups for a 40000 matrix] {{{
 \begin{figure}[!ht]
   \begin{center}
-    \includegraphics[scale=0.8]{img/relative-speedup-40000.png}
+    \includegraphics[scale=0.8]{img/cho-img/relative-speedup-40000.png}
     \caption{Relative speedups for a 40000 matrix}
     \label{fig:relativespeedup40000}
   \end{center}
@@ -254,13 +258,13 @@ similar results than the previous ones.
 \begin{figure}[!htb]
   \begin{minipage}{0.48\linewidth}
     \centering
-    \includegraphics[scale=0.5]{img/times-100000.png}
+    \includegraphics[scale=0.5]{img/cho-img/times-100000.png}
     \caption{Computation times for a 100000 matrix}
     \label{fig:time100000}
   \end{minipage}\hfill
   \begin{minipage}{0.48\linewidth}
     \centering
-    \includegraphics[scale=0.5]{img/speedup-100000.png}
+    \includegraphics[scale=0.5]{img/cho-img/speedup-100000.png}
     \caption{Speedups for a 100000 matrix (hedgehog / openblas)}
     \label{fig:speedups100000}
   \end{minipage}
@@ -273,7 +277,7 @@ are better exploited with a bigger problem.
 % [Relative speedups for a 100000 matrix] {{{
 \begin{figure}[!ht]
   \begin{center}
-    \includegraphics[scale=0.8]{img/relative-speedup-100000.png}
+    \includegraphics[scale=0.8]{img/cho-img/relative-speedup-100000.png}
     \caption{Relative speedups for a 100000 matrix}
     \label{fig:relativespeedup100000}
   \end{center}
