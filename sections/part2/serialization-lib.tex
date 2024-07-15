@@ -12,13 +12,111 @@ nodes using MPI on the cluster version of \gls{hh}.
 
 \subsection{The principle}
 
-First, we are going to explain the principle of the library.
+First, we are going to explain the principle of the library. We will not go to
+deeply into the detail as the intrinsic mechanisms of the library have not changed
+since the first version, which was already well described by
+\cite{projectzz3isima}.\\
 
-\subsection{Removing the streams}
+The basic purpose of the library has not changed. The objective is to be able to
+make C++ classes serializable by writing as little code as possible, similarly
+to what we could do with decorators in languages such as Java. The library
+provides macros that need to be used in the serialized classes. These macros
+generate the \texttt{serialize} and \texttt{deserialize} functions in the class.
+We can see on the listing \ref{lst:serexamplebase}, how we can make
+serializable, a class with two attributes. Here we use the macro
+\texttt{SERIALIZABLE}, that generate the serialization functions, and the macro
+\texttt{SERIALIZER} that initialize the \textit{serializer}.
 
-todo: talk about the trial of splitting the list
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+  #include <serializer/serializable.hpp>
+
+  class MyClass {
+      SERIALIZABLE(int, double);
+    public:
+      MyClass(int x, double y): SERIALIZER(x_, y_), x_(x), y_(y) {}
+
+    private:
+      int x_ = 0;
+      double y_ = 0;
+  };
+\end{minted}
+\caption{Example of a class serialization}
+\label{lst:serexamplebase}
+\end{listing}
+%- end listing --------------------------------------------------------------}}}
+
+The \textit{serializer} is an attribute added to the class by the first macro.
+It holds a data structure, the \texttt{MemberList} (previously called
+\texttt{AttrContainer}), that will store references to the attributes of the
+serialize class in order to be able to access their values or modify them. This
+data structure acts as a list in which each node can store a different type. It
+can also be compared to a \texttt{tuple}. In the generated serialization
+function, we call the methods of the \textit{serializer} which will start the
+serialization of the attributes in the member list.
+
+To serialize the attribute, we use a special class called \texttt{Convertor}.
+This class is composed of very generic template functions that are able to
+convert most of the types of the standard library as well as some external types
+if they match certain conditions. This means that the user of the library do not
+need to make the translation of the serialized member by hand, everything is
+done automatically in the convertor. Furthermore, it is possible to create its
+own convertor class, either to add support for external types or to serialize
+polymorphic objects (the library has to know which types it has to create during
+the deserialization). The class has been changed since the first version of the
+library. These changes will be explained in the section \ref{sec:convertor}.\\
+
+Now that we have explained the basic principle of the library, we will detail
+the optimizations and the features that have been added to it.
+
+\subsection{Binary serialization}
+
+The first version of the library was generating a human-readable string with a
+format similar to JSON. For the new version, it has been decided to use the
+binary format instead. The binary format is more interesting if we are searching
+for performances since it takes less space and is very easy to parse. Moreover,
+it allowed the removal of a lot of unnecessary information. For instance, to
+generate the serialized string in the previous format, we needed to know the
+identifiers of the member variables of the class. Now we assume that the data
+will always be serialized and deserialized in the same order, so we do not need
+this information anymore. Moreover, the previous format required to have
+separators in the string to identify the beginning and the end of objects,
+arrays, string (that had to be escaped manually\footnote{The string were
+represented between \texttt{'\"'}, so we had to escape potential the double quote
+character inside the string in order for them not to be considered as a
+separator during the deserialization.}), \dots
+
+To serialize fundamental types in binary, we use the \texttt{reinterpret\_cast}
+to convert the address of the serialized variable in \texttt{char*} and
+vice-versa. For the containers and strings, we start by writing the number of
+elements (on a \texttt{size\_t}), then we write the elements themselves. When a
+pointer is serialized, we start by adding a character (either \texttt{v} or
+\texttt{n}) to specify if the pointer is null or valid. If the pointer is null,
+there is nothing else to add. Otherwise, we deserialize the element on which the
+pointer points to. During the deserialization, the pointers are dynamically
+allocated if the variable is null, otherwise we just modify the pointed value.
+This is important, especially for dynamic arrays since the dynamic allocation is
+very slow. Pointers can lead to segmentation error or memory leak if they are
+not handled properly. In our situation, we do not have any means to prevent such
+behaviors, so we assume that the user of the library do things well or do not
+use pointers.
+
+\subsubsection{C-Struct}
+
+It is possible, even in C++, to use \texttt{reinterpret\_cast} on
+\gsl{C-Structs}. Doing so is very fast, so it has been tried to split the member
+list in two parts, in order to extract the fundamental members and then generate
+a \gls{cstrcut}. Such a structure could have been serialized faster than the
+member list since it would not have required the call to the functions of the
+convertor. Unfortunately, this optimization added a lot of complexity and
+splitting the member list had a cost at runtime. It has eventually been decided
+to abandon this feature.
 
 \subsection{Redesigning the convertor}
+\label{sec:convertor}
+
+% todo
 
 \subsection{New features}
 
