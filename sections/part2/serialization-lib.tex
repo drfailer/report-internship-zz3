@@ -105,9 +105,9 @@ use pointers.
 \subsubsection{C-Struct}
 
 It is possible, even in C++, to use \texttt{reinterpret\_cast} on
-\gsl{C-Structs}. Doing so is very fast, so it has been tried to split the member
+\gls{cstruct}. Doing so is very fast, so it has been tried to split the member
 list in two parts, in order to extract the fundamental members and then generate
-a \gls{cstrcut}. Such a structure could have been serialized faster than the
+a \gls{cstruct}. Such a structure could have been serialized faster than the
 member list since it would not have required the call to the functions of the
 convertor. Unfortunately, this optimization added a lot of complexity and
 splitting the member list had a cost at runtime. It has eventually been decided
@@ -119,7 +119,7 @@ to abandon this feature.
 % todo
 Since most of the types are serialized automatically, it was required for the
 user to have a way to manually add conversion functions for external types.
-Indeed, the user do not always have the possibility to make classes
+Indeed, the user does not always have the possibility to make classes
 serializable. For instance, with the Qt framework, we do not have access to the
 class \texttt{QString} and this class cannot be serialized by the functions of
 the default convertor.
@@ -271,7 +271,7 @@ variables holding the dimensions, or use values if the size is known at compile
 time. The number of dimensions is not related to the dimensions of the pointer.
 Here, the user can have a multidimensional array stored in a 1D pointer, and
 specify all the dimensions to the \texttt{DynamicArray}. For instance, we can
-have the following type: \texttt{DynamicArray<double*, size\_t&, size\_t>}. In
+have the following type: \texttt{DynamicArray<double*, size\_t\&, size\_t>}. In
 this example, we have a 2D array (matrix) stored in a 1D pointer. The first
 dimension of this matrix might be variable, so it is store in a member variable
 given by reference to the \texttt{DynamicArray}. The second dimension is
