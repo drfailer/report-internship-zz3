@@ -131,43 +131,158 @@ needed to be defined before the default ones in order for the code to compile.
 To understand why this could not be done using basic inheritance, we will
 consider the following example: the user wants to serialize a class that holds a
 vector of an \texttt{Unknown} type. This type is an external one and it is not
-supported by default so it requires to implement a custom convertor using
+supported by default, so it requires implementing a custom convertor using
 inheritance. Now, we are going to try to compile the code. Firstly, we want to
 serialize a vector and the dedicated conversion function is in the mother class
 of the custom convertor. Then, once we are in the function that converts the
 vector, we want to find the function that will treat the element stored in the
 vector. Here there is a problem because this function is defined in the
-sub-class and we do not have access to it from the mother one. One solution
+sub-class, and we do not have access to it from the mother one. One solution
 would be to use virtual functions. However, it was not possible by that time
 because all the conversion function where templates since \gls{sfinae} was used
 to differentiate one function from another.
 
 Having such a macro in the library was a real problem. Indeed, the first issue
 is the difficulty of maintaining the code. As all the functions were defined in
-the macro, the compiler errors were difficult to read and it was not possible to
-use the full power of an IDE (there are no error in macros). The second issue is
-the fact that a lot of code was generated. In fact, if the user wanted to create
-multiple convertor classes, there was a lot of code duplication. Finally, the
-usage of such a macro from the user's point of view was very unintuitive.
+the macro, the compiler errors were difficult to read, and it was not possible
+to use the full power of an IDE (there are no error in macros). The second issue
+is the fact that a lot of code was generated. In fact, if the user wanted to
+create multiple convertor classes, there was a lot of code duplication. Finally,
+the usage of such a macro from the user's point of view was very unintuitive.
 
 To remove the \texttt{CONVERTOR} macro, a method similar to the behaviors of
 \gls{hh} has been utilized \cite{bardakoff2021analysis}. We use the
 \texttt{Convert} behavior, that is a template class with two virtual pure
 functions, \texttt{serialize} and \texttt{deserialize} that should be overridden
-in the custom convertor class. The fact that the class is template but not the
-methods allows them to be virtual. The default convertor class holds non static
-member functions \texttt{serialize\_} and \texttt{deserialize\_} (an \texttt{\_}
-is used to avoid conflicts with the functions from \texttt{Convert}). These
-methods are templates and they use concepts from C++20 to match the types. The
-usage of concepts is very important in this case because they are more flexible
-than \gls{sfinae}. In fact, they easily permit the definition of fallback
-functions that will be called when a non supported type is serialized. These
-methods use the functions from \texttt{Convert}. The last important thing is the
-fact that the default convertor inherits from multiple \texttt{Convert} classes
-(one per new type added).
+in the user's convertor class. The fact that the class is template but not the
+methods allows them to be virtual. The definition of this class is visible on
+the listing \ref{lst:convert}.
 
-%todo
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+template <typename T> struct Convert {
+    virtual std::string &serialize(T const &, std::string &) const = 0;
+    virtual T deserialize(std::string_view &, T &) = 0;
+};
+\end{minted}
+\caption{Convert class}
+\label{lst:Convert}
+\end{listing}
+%- end listing --------------------------------------------------------------}}}
+
+The default convertor class holds non-static member functions
+\texttt{serialize\_} and \texttt{deserialize\_} (an \texttt{\_} is used to avoid
+conflicts with the functions from \texttt{Convert}). These methods are
+templates, and they use concepts from C++20 to match the types. The usage of
+concepts is very important in this case because they are more flexible than
+\gls{sfinae}. In fact, they easily permit the definition of fallback functions
+that will be called when a non-supported type is serialized. These fallback
+methods use the functions from \texttt{Convert} as we can see on the listing
+\ref{lst:fallbackserialize}.
+
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+  template <serializer::tools::concepts::NonSerializable T>
+  std::string &serialize_(T const &elt, std::string str) const {
+      if constexpr (tools::mtf::contains_v<T, AdditionalTypes...>) {
+          // we need a static cast because of implicit constructors (ex:
+          // pointer to shared_ptr)
+          return static_cast<const Convert<T> *>(this)->serialize(elt, str);
+      } else {
+          throw serializer::exceptions::UnsupportedTypeError<T>();
+      }
+  }
+\end{minted}
+\caption{Fallback serialization method}
+\label{lstd:fallbackserialize}
+\end{listing}
+%- end listing --------------------------------------------------------------}}}
+
+The last important thing is the fact that the default convertor inherits from
+multiple \texttt{Convert} classes (one per new type added). To achieve that, we
+can see on the listing \ref{lst:convertor} that we use the fold expressions with
+variadic templates.
+
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+template <typename... AdditionalTypes>
+struct Convertor : Convert<AdditionalTypes>... { /* ... */ };
+\end{minted}
+\caption{Convertor class}
+\label{lst:convertor}
+\end{listing}
+%- end listing --------------------------------------------------------------}}}
+
+The new \texttt{Convertor} class is then easier to use than the old macro. It
+is also easier to maintain since macros in C and C++ are not made to contain
+such an amount of code. Lastly, with this version, there is less code
+duplication which makes this library usable in a case where memory is limited
+(embedded C++ applications for instance).
 
 \subsection{New features}
+
+In addition to the optimization, some new features have been implemented.
+Firstly, the support for static and dynamic arrays have been added.
+
+For the static arrays, a conversion function has been implemented. In order to
+serialize arrays, we need to know their sizes. For this, we use
+\texttt{std::extent\_v}. Here, \texttt{std::extent\_v<T[N]>} returns \texttt{N}.
+However, this requires that the user specifies the size of the array (we cannot
+accept \texttt{T[]}). The conversion function is recursive and uses
+\texttt{std::remove\_extent\_t} to convert multidimensional arrays.
+
+%todo: example
+
+In order to be serialized, dynamic arrays need to be differentiated from the
+standard pointers. Furthermore, we also need to access the size of the array,
+however, this size might not be known at compile time. To solve these problems,
+a wrapper type \texttt{DynamicArray} has been utilized. The definition of this
+class is shown on the listing \ref{lst:dynamicarray}.
+
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+template <concepts::Pointer T, typename DT, typename... DTs>
+struct DynamicArray {
+    explicit DynamicArray(T &mem, DT dim, DTs... dims)
+        : mem(mem), dimensions(dim, dims...) {}
+
+    explicit DynamicArray(T &mem, std::tuple<DT, DTs...> dimensions)
+        : mem(mem), dimensions(dimensions) {}
+
+    T &mem;
+    std::tuple<DT, DTs...> dimensions;
+};
+\end{minted}
+\caption{\texttt{DynamicArray} class}
+\label{lst:dynamicarray}
+\end{listing}
+%- end listing --------------------------------------------------------------}}}
+
+The \texttt{DynamicArray} class stores a reference to the member variable
+holding the array's pointer. We use a reference in case we have to change the
+pointer (potential allocation or free on deserialization). The dimensions of the
+array are stored in a tuple. Here we can see that the types of the dimensions
+are configurable. This means that the user can pass references to member
+variables holding the dimensions, or use values if the size is known at compile
+time. The number of dimensions is not related to the dimensions of the pointer.
+Here, the user can have a multidimensional array stored in a 1D pointer, and
+specify all the dimensions to the \texttt{DynamicArray}. For instance, we can
+have the following type: \texttt{DynamicArray<double*, size\_t&, size\_t>}. In
+this example, we have a 2D array (matrix) stored in a 1D pointer. The first
+dimension of this matrix might be variable, so it is store in a member variable
+given by reference to the \texttt{DynamicArray}. The second dimension is
+constant, so it is passed by value.
+
+%todo: example
+
+Finally, now we can give functions to the serializer. These functions will be
+executed during the serialization and the deserialization.
+
+%todo: static and dynamic arrays
+%todo: functions
 
 \subsection{Conclusion}
