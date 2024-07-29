@@ -130,14 +130,14 @@ all convertor class. This was done because the custom conversion functions
 needed to be defined before the default ones in order for the code to compile.
 To understand why this could not be done using basic inheritance, we will
 consider the following example: the user wants to serialize a class that holds a
-vector of an \texttt{Unknown} type. This type is an external one and it is not
+vector of an \texttt{Unknown} type. This type is an external one, and it is not
 supported by default, so it requires implementing a custom convertor using
 inheritance. Now, we are going to try to compile the code. Firstly, we want to
 serialize a vector and the dedicated conversion function is in the mother class
 of the custom convertor. Then, once we are in the function that converts the
 vector, we want to find the function that will treat the element stored in the
 vector. Here there is a problem because this function is defined in the
-sub-class, and we do not have access to it from the mother one. One solution
+subclass, and we do not have access to it from the mother one. One solution
 would be to use virtual functions. However, it was not possible by that time
 because all the conversion function where templates since \gls{sfinae} was used
 to differentiate one function from another.
@@ -224,17 +224,47 @@ duplication which makes this library usable in a case where memory is limited
 
 \subsection{New features}
 
-In addition to the optimization, some new features have been implemented.
-Firstly, the support for static and dynamic arrays have been added.
+In addition to the optimization, some new features have been implemented. They
+will be presented here.
+
+\subsubsection{Static arrays}
 
 For the static arrays, a conversion function has been implemented. In order to
 serialize arrays, we need to know their sizes. For this, we use
 \texttt{std::extent\_v}. Here, \texttt{std::extent\_v<T[N]>} returns \texttt{N}.
 However, this requires that the user specifies the size of the array (we cannot
 accept \texttt{T[]}). The conversion function is recursive and uses
-\texttt{std::remove\_extent\_t} to convert multidimensional arrays.
+\texttt{std::remove\_extent\_t} to convert multidimensional arrays. On the
+listing \ref{lst:serstaticarr}, we can see an example of static arrays
+serialization. The class \texttt{MyClass} holds two static arrays:
+\texttt{arr\_} which is a one-dimensional array and \texttt{grid\_} which is a
+two-dimensional array. Here, both of the arrays are of type \texttt{int},
+however, it would work with any other type as soon as it is supported by default
+or serializable.
 
-%todo: example
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+class MyClass {
+    SERIALIZABLE(int[10], int[10][10]);
+
+  public:
+    WithStaticArrays():
+      SERIALIZER(arr_, grid_) {}
+
+    /* ... */
+
+  private:
+    int arr_[10];
+    int grid_[10][10];
+};
+\end{minted}
+\caption{Example: serializing static arrays}
+\label{lst:serstaticarr}
+\end{listing}
+%- end listing --------------------------------------------------------------}}}
+
+\subsubsection{Dynamic arrays}
 
 In order to be serialized, dynamic arrays need to be differentiated from the
 standard pointers. Furthermore, we also need to access the size of the array,
@@ -277,12 +307,171 @@ dimension of this matrix might be variable, so it is store in a member variable
 given by reference to the \texttt{DynamicArray}. The second dimension is
 constant, so it is passed by value.
 
+The listing \ref{lst:serdynamicarr} shows an example of serializing a class with
+dynamic array attributes. In this example, the macro \texttt{SER\_DARR\_T} is
+used to generate the type of the dynamic array. For instance,
+\texttt{SER\_DARR\_T(types...)} will expand into
+\texttt{serializer::tools::DynamicArray<types...>} (we use the macro to avoid
+writing the namespaces). Here, the class \texttt{MyClass} holds two dynamic
+arrays: \texttt{arr1D\_} and \texttt{arr2D\_}. The size of \texttt{arr1D\_} and
+\texttt{*arr2D\_} is known at compile time (5 and 2), whereas the size of
+\texttt{arr2D\_} is knwon at runtime (only when \texttt{allocArr2D} is called).
+The size of \texttt{arr2D\_} is then stored in a variable that is serialized and
+that is taken by reference by the \texttt{DynamicArray} constructor as we have
+explained previously.
+
 %todo: example
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+class MyClass {
+    SERIALIZABLE(size_t, size_t, SER_DARR_T(int *, size_t),
+                 SER_DARR_T(int **, size_t &, size_t));
 
-Finally, now we can give functions to the serializer. These functions will be
-executed during the serialization and the deserialization.
+  public:
+    explicit MyClass()
+        : SERIALIZER(arr2DHeight_, SER_DARR_T(int *, size_t)(arr1D_, 5),
+              SER_DARR_T(int **, size_t &, size_t)(arr2D_, arr2DHeight_, 2)),
+          arr1D_(new int[5]) { }
+    ~MyClass() { /* free memory */ }
 
-%todo: static and dynamic arrays
-%todo: functions
+    void allocArr2D(size_t arr2DHeight) { /* ... */ }
+
+    /* ... */
+
+  private:
+    int *arr1D_ = nullptr;
+    int **arr2D_ = nullptr;
+    size_t arr2DHeight_ = 0;
+};
+\end{minted}
+\caption{Example: serializing dynamic arrays}
+\label{lst:serdynamicarr}
+\end{listing}
+%- end listing --------------------------------------------------------------}}}
+
+\subsubsection{Functions}
+
+Finally, now we can give functions to the serializer. These functions can be
+executed at any stage of serialization or the deserialization. They can be used
+to handle specific cases, where we want to serialize a member manually. For
+example, we can use them for serializing complex objects with cyclic references.
+Indeed, the library is not able to detect if a pointer or a reference as already
+bin serialized. It would be possible to perform this verification, however, this
+would be slow. Now, to do that, we can use a function that will either just
+create a link during the deserialization (link the child to it's father in a
+tree) or perform more complex operations (coloring nodes when serializing a
+cyclic graph). The functions can be defined globaly or inside the class using
+either a lambda expression or a static function in case we need to access the
+private members of the class.
+
+From the library's developer point of view, these functions can be used for
+debugging. In fact, as we have already explained, the attributes are serialized
+in the order they appear in the member list, and this is also the case for
+functions. For instance, we could use the functions to print the values of each
+member, as well as the value of the serialized string, before and after they are
+serialized.
+
+Of course, it is not possible to give any function to the serializer. For now,
+the only type that is accepted is the type \texttt{function\_t} as we can see on
+the listing \ref{lst:functiont} bellow.
+
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+using function_t = std::function<void(Phases, std::string_view const &)>;
+\end{minted}
+\caption{Serializer function type}
+\label{lst:functiont}
+\end{listing}
+%- end listing --------------------------------------------------------------}}}
+
+Here we cann see that the functions take two parameters:
+
+\begin{itemize}
+  \item The phase that is either \texttt{Phases::Serialization} or
+    \texttt{Phases::deserialization}. It is used to know if we are serializing
+    or deserializing.
+  \item A constant string view that is either the result of the serialization or
+    the deserialized string depending on which phase is executed. It has been
+    made constant by choice as the user shouldn't be allowed to change the
+    string (we do not want him to break something). This parameter is more
+    usefull for debugging.
+\end{itemize}
+
+It is important to mension that the type \texttt{function\_t}, as well as the
+type \texttt{DynamicArray}, are the only types that are not taken by reference
+by the member list constructor. This is due to the fact that we want to be able
+to create the objects directly in the \texttt{SERIALIZER} macro. To achieve
+this, we use a dedicated meta-function, as shown on the listing
+\ref{lst:mlargtype}.
+
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+  // reference attribute
+  tools::mtf::ml_arg_type_t<H> reference;
+
+  // constructor
+  explicit MemberList(tools::mtf::ml_arg_type_t<H> head,
+                      tools::mtf::ml_arg_type_t<Types>... types)
+      : reference(head), next(types...) {}
+\end{minted}
+\caption{Usage of \texttt{ml\_arg\_type\_t} in the member list}
+\label{lst:mlargtype}
+\end{listing}
+%- end listing --------------------------------------------------------------}}}
+
+The listing \ref{lst:treenode} illustrate how to serialize a node inside a
+binary research tree. Here, a node has four attributes: the value stored in the
+node, the left and the right children, and the father node. In this case, we
+want to save the link between the child node and the father node, however, we
+cannot serialize the father node directly since it is a cyclic reference.
+Instead, we use a function to recreate the pointer link at the end of the
+deserialization. Here, we can notice that once more, we use a macro to simplify
+the syntax. There are three helper macros for functions:
+
+\begin{itemize}
+  \item \texttt{SER\_SFUN}: generate a lambda that is executed during the
+    serialization.
+  \item \texttt{SER\_DFUN}: generate a lambda that is executed during the
+    deserialization.
+  \item \texttt{SER\_FUN}: generate a lambda that is executed during both
+    phases.
+\end{itemize}
+
+Since macros just substitute text, we still have access to the parameters of the
+function even if we cannot see them. The phase parameter is named \texttt{phase}
+and the string view parameter is named \texttt{str}.
+
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+template <typename T>
+struct Node {
+    SERIALIZABLE(T, Node<T> *, Node<T> *, serializer::function_t);
+  public:
+    explicit Node(T value = 0)
+        : SERIALIZER(this->value, left, right, SER_DFUN({
+                         if (this->left)
+                             this->left->father = this;
+                         if (this->right)
+                             this->right->father = this;
+                     })),
+          value(value) {}
+    ~Node() { /* ... */ }
+
+    /* ... */
+
+    T value;
+    Node<T> *father = nullptr;
+    Node<T> *left = nullptr;
+    Node<T> *right = nullptr;
+};
+\end{minted}
+\caption{Example: using a serializer function for serializing a tree node}
+\label{lst:treenode}
+\end{listing}
+%- end listing --------------------------------------------------------------}}}
 
 \subsection{Conclusion}
