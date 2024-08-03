@@ -222,6 +222,18 @@ myGraph.waitForTermination();
 
 \subsection{Profiling}
 
-% example of dot file
+\gls{hh} comes with a very powerfull profiling tools that allow to generate a
+\textit{dot} file. This file can be compiled using the \textit{graphviz}'s tool
+to generate an image on which we can visualize the graph. The generated graph
+contains various information on the execution of the graph such as the execution
+time, the size of the queues, the number of threads, \dots This information can
+be used to optimize the graph by balancing the number threads between the tasks
+or optimizing the tasks that are slower. It can also be used to refactor the
+algorithm as it is very easy to se the critical path on the image.
 
-\subsection{Example}
+%todo image
+
+It is important to mention that this profiling tool is always active as it has
+any cost on the execution time of the graph.
+
+% example of dot file

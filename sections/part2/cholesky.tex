@@ -4,12 +4,18 @@
 
 \section{Cholesky}
 
-\gls{fds}'s simulation requires to solve equations. For this they are able to
-use the Cholesky algorithm, however, their current implementation is not fast
-enough. In this section, we will start by presenting the algorithm. Then we
-will explain the implementation with \gls{hh} before presenting the results. For
-the measures, our implementation will be compared to the openblas's one as it is
-one of the fastest currently available.
+The first tasks that has been done during the project was the implementation of
+the Cholesky decomposition. The work that will be described in this section has
+been realized to demonstrate the abilities of \gls{hh}, and it has been done
+without any knowledge of how \gls{fds} works. For these reasons, we will
+describe this work before explaining the principle of the simulator.\\
+
+\gls{fds}'s simulation requires solving equations. For this they are able to use
+the Cholesky algorithm, however, their current implementation is not fast
+enough. In this section, we will start by presenting the algorithm. Then we will
+explain the implementation with \gls{hh} before presenting the results. For the
+measures, our implementation will be compared to the openblas's one as it is one
+of the fastest currently available.
 
 \subsection{The algorithm}
 \label{sec:choalgo}

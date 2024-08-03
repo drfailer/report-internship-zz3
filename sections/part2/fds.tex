@@ -79,7 +79,8 @@ computation time of the mean is not taken into account when we make the measure
 on the original test program unlike on the \gls{hh} program. We will explain why
 the \gls{hh} program meausre the computation of the mean as well in the section
 \ref{sec:3Dloopsmethod}. Finally, like in the \gls{fds}'s code, most of the
-variables are global.
+variables are global, which makes difficult to analyse the dependencies between
+the tasks.
 
 \subsubsection{The method}
 \label{sec:3Dloopsmethod}
@@ -89,49 +90,136 @@ the entire computation in Fortran. The objective was to be efficient and avoid
 rewriting the code in C++. Furthermore, all the variables have been kept in
 Fortran as well. Here, \gls{hh} has been used as an orchestrator, its role is to
 allocated and managed threads in which the Fortran subroutines are called when
-it is required. All the OpenMP's pragmas are removed since we do not want to
-perform fine grain parallelism, we want the threads to be entirely managed by
+it is required. All the OpenMP's pragmas have been removed since we do not want
+to perform fine grain parallelism, we want the threads to be entirely managed by
 \gls{hh}.
 
 As we said in the introduction of this section, to optimize computation time, we
 have used block decomposition on the 3D arrays of the simulation. In order to do
 this, the Fortran code has been reorganized in subroutines that are parametrized
-with the boundaries of the blocks. The loops have been modified to iterate over
-the blocks instead of the whole matrix. Then the \gls{hh} tasks manage the
-boundaries of the blocks.
+with the boundaries of the blocks as shown on the listing
+\ref{lst:looproutines}. The loops have been modified to iterate over the blocks
+instead of the whole matrix. Then the \gls{hh} tasks manage the boundaries of
+the blocks.
 
-%todo
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{Fortran}
+TODO
+\end{minted}
+\caption{Loop subroutines signature}
+\label{lst:looproutines}
+\end{listing}
+%- end listing --------------------------------------------------------------}}}
 
-\subsubsection{The results}
+As we can see on the figure \ref{fig:loopsgraph}, the \gls{hh} graph has three
+steps:
 
-% [Computation times] {{{
+\begin{itemize}
+  \item Initialization: creation of the blocks indices (has we have seen
+    previously, \gls{hh} manages only indices and not the actual data).
+  \item Computation of the velocity: this part holds the loops that computes the
+    velocity for the x, y and z axis. Here, there is one task per axis, and
+    these tasks just call the Fortran subroutines with the blocks boundaries.
+  \item Computation of the mean
+\end{itemize}
+
+% [3D loops graph] {{{
 \begin{figure}[h!]
   \begin{center}
-    \includegraphics[scale=0.2]{img/fds-loops/times.png}
+    \includegraphics[scale=0.2]{img/fds-loops/graph-61.png}
+    \caption{3D loops graph}
+    \label{fig:loopsgraph}
+  \end{center}
+\end{figure}
+%}}}
+
+It would have been possible to have only one tasks that perform all the
+computation for the three axis. However, having three tasks means that we also
+have three queues of data. If we had only one tasks, all the blocks for each
+axis would have been in the same queue. To optimize the dequeue time, we use
+multiple tasks that run in parallel, and each of these task have its own queue.
+
+Concerning the data, as we have explained, the graph only manages blocks
+indices. Each block has the start index and the end index on each dimension. In
+order to send the right blocks to the right tasks, the block type as an
+identifier as template parameter. This identifier is used to know if the block
+should be used to compute the x, y or z direction.
+
+\clearpage{}
+\subsubsection{The results}
+
+Now that we have explain how the graph has been implemented, we can describe the
+results. Before we start, shall we mention that the measure where taken on a
+node that has 384 threads, however, here, only 200 threads where available.
+Another important detail concern the problem size. In order to test the limits
+of the algorithm, the measures have been made on very big matrices
+($1024\times1024\times1024$). Though, this is much bigger compared to the size
+of the meshes that the algorithm will treat in reality. Making the measures on
+such a problem permit to have more distinguishable differences between the
+programs, and this allows as well to see if the program scales or not.
+
+Firstly, the plot \ref{fig:loopscomptime} represents the computation of the two
+programs. As we can see, the \gls{hh} program is quite faster that the
+\gls{fds} one. Furthermore, as shown by the standard deviation, it is way more
+consistent. This shows that just by using block decomposition, we are able to
+have a faster and more consistent program.
+
+% [Computation times] {{{
+\begin{figure}[ht!]
+  \begin{center}
+    \includegraphics[scale=0.6]{img/fds-loops/times.png}
     \caption{Computation times of the test program for HH and FDS (200 threads node)}
     \label{fig:loopscomptime}
   \end{center}
 \end{figure}
 %}}}
 
+On the figure \ref{fig:loopsspeedup}, we can see the acceleration of the
+\gls{hh} program over the \gls{fds} program. We can notice that on the point
+were \gls{fds} has its best measure, \gls{hh} is nearly two times faster.
+Interestingly, \gls{fds} starts to be very unstable with more than 150 threads
+so the acceleration of the \gls{hh} program is very high.
+
 % [Acceleration] {{{
-\begin{figure}[h!]
+\begin{figure}[ht!]
   \begin{center}
-    \includegraphics[scale=0.2]{/img/fds-loops/speedup.png}
+    \includegraphics[scale=0.6]{img/fds-loops/speedup.png}
     \caption{Acceleration of HH over FDS on the test program (200 threads node)}
-    \label{fig:label}
+    \label{fig:loopsspeedup}
   \end{center}
 \end{figure}
 %}}}
+
+Finally, we can see on the figure \ref{fig:loopsrelativespeedup} the relative
+speedup for each program. This relative speedup is not very high for both of the
+programs which means that we don't reach enough parallelism \footnote{In our
+case, having a lot of parallelism means that we use all the resources of the
+processors.} yet. For \gls{hh} this can be explained by the fact that the chosen
+block size is not optimal. For these measures, the block size was
+($1024\times32\times1$), which might be either too large or too small.
+Generally, there is no good way to find the optimal block size, the only method
+is to test the program with multiple ones. However, this was difficult to do on
+this program considering the fact that the initialization is very slow. It took
+more than twenty hours of computation to perform the measures that are presented
+in this section.
 
 % [Relative speedup] {{{
-\begin{figure}[h!]
+\begin{figure}[ht!]
   \begin{center}
-    \includegraphics[scale=0.2]{../../img/fds-loops/relative_speedup.png}
+    \includegraphics[scale=0.6]{img/fds-loops/relative_speedup.png}
     \caption{Relative speedup for HH and FDS on the test program (200 threads node)}
-    \label{fig:label}
+    \label{fig:loopsrelativespeedup}
   \end{center}
 \end{figure}
 %}}}
 
+Eventually, these results show that the block decomposition can have a
+tremendous impact on the computation time. Furthermore, testing this program
+permitted to understand how to use Fortran and C++ together. In the next
+section, we will explain why this method can not be used in the global
+simulation.
+
 \subsubsection{Limits}
+
+%todo
