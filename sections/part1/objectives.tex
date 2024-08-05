@@ -2,21 +2,31 @@
 %                                  objectives                                  %
 %------------------------------------------------------------------------------%
 
+\clearpage
 \section{Objectives}
 
-The objective of the project is to use the \gls{hh} library to accelerate a
-simulation application called \gls{fds}.
+The objective of the internship is to study the usage of \gls{hh} and the
+data-flow graphs in the context of \gls{hpc} applications. One of the objectives
+of the project was to use \gls{hh} to accelerate a simulation application called
+\gls{fds}.
 
-\gls{hh} is a \gls{hpc} library created at the NIST. It uses data-flow graphs to
-express algorithms composed of tasks that can be ran asynchronously. This
-library will be described in the section \ref{sec:hh}.
+\gls{hh} is a \gls{hpc} library written in C++ and created at the NIST. It uses
+data-flow graphs to express algorithms composed of tasks that can be run
+asynchronously. This library will be described in the section \ref{sec:hh}.
 
-\gls{fds} is a simulation of fire also created at the NIST. The principle is to
-simulation fire evolution given a certain configuration. The configuration is
-given threw a file that will information such as the size of the room, the
-walls, the windows and doors, the material on fire at the beginning, \dots
+\gls{fds} is a fire simulation also created at the NIST. The principle is to
+simulate fire evolution for a certain configuration. The configuration is given
+threw a file that will contain information such as the size of the room, the
+walls, the windows and doors, the material on fire at the beginning, \dots T
 
-The \gls{fds}'s team has acquire a new computing cluster, however the current
-program does not scale as expected when they increase the number of CPUs. Our
-main objective will be to see if it is possible to improve the performances
-using \gls{hh}.
+Currently, \gls{fds} is written in Fortran (standard 2018) and it is parallelized
+with MPI and OpenMP.
+
+Another goal of the internship is to contribute to the development of \gls{hh}.
+Currently, the library is not able to run on multiple nodes on clusters. The
+current cluster version of \gls{hh} uses MPI to handle communication between the
+nodes. However, this requires to serialize the data before the communication. To
+solve this problem, it has been proposed to use a serialization library written
+at ISIMA during the third year project. The objective will be to optimize the
+serialization time and extend the features of the library in order to be able to
+use it in \gls{hh}.
