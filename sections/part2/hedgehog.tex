@@ -231,9 +231,19 @@ be used to optimize the graph by balancing the number threads between the tasks
 or optimizing the tasks that are slower. It can also be used to refactor the
 algorithm as it is very easy to se the critical path on the image.
 
-%todo image
+We can see an example of the compiled dot file for a graph performing the
+Hadamar product on two matrices on the figure \ref{fig:tuto1}. This example has
+been presented in the tutorials of the \gls{hh}'s documentation \cite{hh:tuto}.
+
+% [Output of the profiling tool (Hadamar Product)] {{{
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[scale=0.4]{img/Tutorial1HadamardProduct.png}
+    \caption{Output of the profiling tool (Hadamar Product)}
+    \label{fig:tuto1}
+  \end{center}
+\end{figure}
+%}}}
 
 It is important to mention that this profiling tool is always active as it has
-any cost on the execution time of the graph.
-
-% example of dot file
+any cost on the execution time of the graph \cite{bardakoff2021analysis}.
