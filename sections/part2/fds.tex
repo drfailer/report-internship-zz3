@@ -215,7 +215,8 @@ steps:
     previously, \gls{hh} manages only indices and not the actual data).
   \item Computation of the velocity: this part holds the loops that computes the
     velocity for the x, y and z axis. Here, there is one task per axis, and
-    these tasks just call the Fortran subroutines with the blocks boundaries.
+    these tasks just call the Fortran subroutines with the blocks boundaries. As
+    shown on the graph, all those three tasks are executed in parallel.
   \item Computation of the mean
 \end{itemize}
 
