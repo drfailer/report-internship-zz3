@@ -161,18 +161,49 @@ to perform fine grain parallelism, we want the threads to be entirely managed by
 As we said in the introduction of this section, to optimize computation time, we
 have used block decomposition on the 3D arrays of the simulation. In order to do
 this, the Fortran code has been reorganized in subroutines that are parametrized
-with the boundaries of the blocks as shown on the listing
-\ref{lst:looproutines}. The loops have been modified to iterate over the blocks
-instead of the whole matrix. Then the \gls{hh} tasks manage the boundaries of
-the blocks.
+with the boundaries. We can see the declaration of the new subroutines on the
+listing \ref{lst:looproutines}. Here we can see as well that we use the ISO C
+bindings to be able to call the subroutines from C++. The original loops have
+been moved in the new subroutines and have been modified to iterate over the
+blocks instead of the whole matrix.
 
 %- begin listing ------------------------------------------------------------{{{
 \begin{listing}[ht!]
 \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{Fortran}
-TODO
+SUBROUTINE COMPUTE_X_FLUX(IBEGIN, JBEGIN, KBEGIN, IEND, JEND, KEND) BIND(C, NAME = "computeXFlux")
+SUBROUTINE COMPUTE_Y_FLUX(IBEGIN, JBEGIN, KBEGIN, IEND, JEND, KEND) BIND(C, NAME = "computeYFlux")
+SUBROUTINE COMPUTE_Z_FLUX(IBEGIN, JBEGIN, KBEGIN, IEND, JEND, KEND) BIND(C, NAME = "computeZFlux")
 \end{minted}
 \caption{Loop subroutines signature}
 \label{lst:looproutines}
+\end{listing}
+%- end listing --------------------------------------------------------------}}}
+
+On the listing \ref{lst:loophhtask}, we can see how the subroutines are used in
+the \gls{hh} tasks. Here, we can see that the tasks takes as input a block
+index. As we have explained, the graph only manages blocks indices. Each block
+has the start index and the end index on each dimension. In order to send the
+right blocks to the right tasks, the block type as an identifier as template
+parameter. This identifier is used to know if the block should be used to
+compute the $x$, $y$ or $z$ direction. In the case shown bellow, we want to compute
+the terms on the $x$ axis, so the identifier of the block is \texttt{X}.
+The same block have been transmitted to the \texttt{Y} and \texttt{Z} tasks
+using the corresponding identifiers.
+
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+  void execute(std::shared_ptr<BlockIdx<X>> block) override {
+    size_t i = block->i == 1 ? 0 : block->i;
+    computeXFlux(&i, &block->j, &block->k,
+                 &block->iEnd,
+                 &block->jEnd,
+                 &block->kEnd);
+    this->addResult(block);
+  }
+\end{minted}
+\caption{Hedgehog compute task for the 3D Loops program.}
+\label{lst:loophhtask}
 \end{listing}
 %- end listing --------------------------------------------------------------}}}
 
@@ -203,12 +234,6 @@ computation for the three axis. However, having three tasks means that we also
 have three queues of data. If we had only one tasks, all the blocks for each
 axis would have been in the same queue. To optimize the dequeue time, we use
 multiple tasks that run in parallel, and each of these task have its own queue.
-
-Concerning the data, as we have explained, the graph only manages blocks
-indices. Each block has the start index and the end index on each dimension. In
-order to send the right blocks to the right tasks, the block type as an
-identifier as template parameter. This identifier is used to know if the block
-should be used to compute the x, y or z direction.
 
 \clearpage{}
 \subsubsection{The results}
