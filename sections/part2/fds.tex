@@ -9,14 +9,71 @@ the work that has been realized on this tool.
 
 \subsection{The Fire Dynamics Simulator}
 
-% todo
+"\gls{fds} is a computational fluid dynamics (CFD) model of fire-driven fluid
+flow. The FDS software solves numerically a form of the Navier-Stokes
+nist-equations appropriate for low-speed, thermally-driven flow, with an
+emphasis on smoke and heat transport from fires" \cite{fds:pres}. The first
+version of the simulator was published in February 2000. It is used for solving
+practical problems in fire protection engineering and to studying fundamental
+fire dynamics and combustion \cite{fds:tutorial}.
 
-\subsection{Organization of the code}
+The simulator program reads the configuration from a text file that describe the
+parameters, computes the solution of the equations and write the results to
+different files. The format of the configuration file is described in the user's
+guide \cite{fdsguide}. The output files of the simulator can either be analysed
+directly or they can be used as input to other programs. Indeed, \gls{fds} can
+be paired with two other programs. Evac is the evacuation simulation module for
+\gls{fds}. It is used to simulate the movement of people in evacuation
+situations \cite{fds:evac}. Smokeview is a visualization program that displays
+the output of \gls{fds}. The figure \ref{fig:smvexample} shows an example of the
+Smokeview result. The usage of this tool is described by \cite{smvguide}.
 
-% initialization
-% loop
-%    - predictor
-%    - corrector
+% [Smokeview example] {{{
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[scale=0.5]{img/smvexample.png}
+    \caption{Smokeview example}
+    \label{fig:label}
+  \end{center}
+\end{figure}
+%}}}
+
+During the project, neither Evac nor Smokeview have been used. However, it is
+still interesting to mention them to give some context.
+
+\gls{fds} uses a large-eddy simulation model (LES) \cite{fdsref}, which is a
+mathematical model for turbulence used in computational fluid dynamics
+\cite{enwiki:les}. This is an alternative to the direct numerical simulation
+(DNS) when the computational costs become too high. The idea is to ignore the
+small elements by utilizing a low pass filter on the equations to simplify the
+computation \cite{enwiki:les} and \cite{ferziger1996large}. The small elements
+can still have an effect on the solution. To solve this problem, \gls{fds}
+simulation is divided in two parts as show in the technical reference
+\cite{fdsref}. First the predictor part make an estimation of the terms at the
+next time step. At the end of the predictor, the simulator verifies the
+stability conditions. If the stability conditions are satisfied, the predictor
+continues to the next time step. Otherwise, the corrector part will correct the
+terms before the simulation continues to the next time step. Both of these steps
+will be represented as sub-graphs in the \gls{hh} version of the simulator. The
+\gls{fds}'s simulation present many other characteristics that will not be
+described in this report. However, all the mathematical tools and models used by
+the simulators are detailed by \cite{fdsref}.
+
+The simulation is written entirely in Fortran (standard 2018). The code is
+already parallelized using MPI and OpenMP. MPI is used to parallelize the
+computation of the meshes \footnote{As explain in the user's guide, a mesh is a
+portion of the 3D space. Normally they are used for modeling complex geometrical
+structures that do not fit in one parallelogram (corridors for instance).
+However, they can also be used to perform a block decomposition on the
+matrices.} on multiple nodes on a cluster, and OpenMP is used to parallelize
+many of the loops that are present in the program. Interestingly, \gls{fds} do
+not use any other dependencies such as \textit{blas} or \textit{lapack} that
+we used in the Cholesky implementation. Furthermore, the simulator is not yet
+capable of performing GPU computation. However, the developers are interested in
+using GPUs in the \gls{hh} implementation.
+
+Now that we have described what \gls{fds} is, let us see what has been done to
+optimize the simulation with \gls{hh}.
 
 \subsection{3D loops}
 
@@ -254,9 +311,11 @@ sub-tasks to create a new graph, and we keep iterating till our tasks are
 precise enough. Eventually, we should end up having atomic tasks, and some of
 them can be run in parallel.
 
-This approach was logic, however, it is very difficult to do everything by hand.
-Furthermore, doing this manually is not a method that is easily reproducible.
-For this reason, we have decided to try building a tool that could help.
+This approach was logic, however, it is very difficult to do everything by hand
+due to the complexity and the size of the code base. Furthermore, doing this
+manually is not a method that is easily reproducible. For this reason, we have
+decided to try building a tool able to perform some automatic transformations on
+the code.
 
 % todo : reformulate the end and explain why we want to have tool and what it
 % does
