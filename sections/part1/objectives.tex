@@ -14,13 +14,14 @@ of the project was to use \gls{hh} to accelerate a simulation application called
 data-flow graphs to express algorithms composed of tasks that can be run
 asynchronously. This library will be described in the section \ref{sec:hh}.
 
-\gls{fds} is a fire simulation also created at the NIST. The principle is to
-simulate fire evolution for a certain configuration. The configuration is given
-threw a file that will contain information such as the size of the room, the
-walls, the windows and doors, the material on fire at the beginning, \dots T
-
-Currently, \gls{fds} is written in Fortran (standard 2018) and it is parallelized
-with MPI and OpenMP.
+\gls{fds} is a fire simulation also created at the NIST. The simulator reads a
+configuration file, solve the fluid dynamics equations and output the results
+into files that can be analysed directly or used with other programs. Currently,
+\gls{fds} is written in Fortran (standard 2018) and it is parallelized with MPI
+and OpenMP. The objective is not to study the mathematical model behind the
+simulation. This is to understand how the code is organized and how it processes
+the data, in order to be able to design a \gls{hh} graph that will orchestrate
+the simulation.
 
 Another goal of the internship is to contribute to the development of \gls{hh}.
 Currently, the library is not able to run on multiple nodes on clusters. The
