@@ -77,3 +77,36 @@
   \listofatoc
 }
 %
+
+% Special listings %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\definecolor{backpink}{rgb}{1,0.94,0.95}
+
+\lstdefinestyle{formatstyle}{
+    backgroundcolor=\color{backpink},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{purple},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{teal},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    %numbers=left,
+    %numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\lstnewenvironment{format}[1][]
+  {\noindent\minipage{\linewidth}\medskip
+   \lstset{basicstyle=\ttfamily\footnotesize,frame=single,#1,upquote=true}
+   \lstset{style=formatstyle}
+   }
+  {\endminipage}

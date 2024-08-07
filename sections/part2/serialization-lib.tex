@@ -102,7 +102,98 @@ not handled properly. In our situation, we do not have any means to prevent such
 behaviors, so we assume that the user of the library do things well or do not
 use pointers.
 
-\subsubsection{C-Struct}
+\subsubsection{Example}
+
+To visually explain how the data are organized in the serialized string, shall
+we consider an example. Here we will assume that we have 2 classes,
+\texttt{MyClass} that we can see on the listing \ref{lst:serexmyclass} and
+\texttt{Class2} that is shown on the listing
+\ref{lst:serexmysecondclass}.
+
+The class \texttt{MyClass} holds five attributes. The first attributes have
+fundamental types \texttt{int} and \texttt{double}. The third attribute is a
+vector of integers, and it is followed by a pointer on a double. Finally, the
+last attribute is a shared pointer on a \texttt{Class2} object.
+
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+  struct MyClass {
+    int i;
+    double d;
+    std::vector<int> v = {};
+    double *ptr = nullptr;
+    std::shared_ptr<Class2> s_ptr = nullptr;
+  };
+\end{minted}
+\caption{Definition of MyClass}
+\label{lst:serexmyclass}
+\end{listing}
+%- end listing --------------------------------------------------------------}}}
+
+The class \texttt{Class2} has only one attribute which is a string.
+
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+  struct Class2 {
+    std::string id;
+  };
+\end{minted}
+\caption{Definition of Class2}
+\label{lst:serexmysecondclass}
+\end{listing}
+%- end listing --------------------------------------------------------------}}}
+
+Now we are going to construct an object \texttt{MyClass} with the values that
+are described in the table \ref{tbl:serexvals}.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|}
+ \hline
+ Attributes & Values \\
+ \hline\hline
+  i & 14 \\
+ \hline
+  d & 1.3 \\
+ \hline
+  v & \{ 1, 2, 3 \} \\
+ \hline
+  ptr & nullptr \\
+ \hline
+  s\_ptr & @address \\
+ \hline\hline
+  s\_ptr.id & "name" \\
+ \hline
+\end{tabular}
+\caption{Values of the attributes in the object \texttt{myClass}}
+\label{tlb:serexvals}
+\end{table}
+
+If we try to deserialize this object, we will obtain the following output:
+
+\begin{format}
+  7 MyClass 14 1.3 3 1 2 3 n v 13 Class2 4 name
+  [7: MyClass] [14] [1.3] [3: 1, 2, 3] [n] [v: [13: Class2] [4: name]]
+\end{format}\leavevmode\newline
+
+Here we can see on the first line the content of the final string (the values on
+hexadecimal have been translated). On the second line the different part of the
+string have been regroupped between square brackets. Here we can see that the
+string always begins with the identifier of the type of the serialized class.
+For instance, we have \texttt{MyClass} at the beginning of an object of type
+\texttt{MyClass}, or \texttt{Class2} for an object of the corresponding type.
+The name of the type is the only meta-data store in the serialized string. It
+should be used to construct the right object when we only have the serialized
+string (when we deserialize a polymorphic type for instance). We can see as well
+that the content of the containers is allwas preceded by the number of elements.
+For instance, \texttt{v} contains three elements, so its content is preceded by
+\texttt{3}. Finally, the null pointers are identified with the letter \texttt{n}
+and the valid ones with the letter \texttt{v} followed by the content as shown
+for the attribute \texttt{s\_ptr}.
+
+\subsubsection{C-Struct optimization}
 
 It is possible, even in C++, to use \texttt{reinterpret\_cast} on
 \gls{cstruct}. Doing so is very fast, so it has been tried to split the member
