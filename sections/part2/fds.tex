@@ -8,6 +8,7 @@ In this section, we will explain what is \gls{fds}, and we will describe some of
 the work that has been realized on this tool.
 
 \subsection{The Fire Dynamics Simulator}
+\label{sec:fdsdesc}
 
 "\gls{fds} is a computational fluid dynamics (CFD) model of fire-driven fluid
 flow. The FDS software solves numerically a form of the Navier-Stokes
@@ -312,7 +313,48 @@ simulation.
 
 \subsubsection{Limits}
 
-%todo
+This method works, and it is easy to set up, however it still presents some
+limitations.
+
+Firstly, the fact that the data is entirely managed by Fortran is a problem.
+Indeed, \gls{hh} creates a data-flow graph, so it should be responsible for
+managing all the data. This would have a big impact on the performance, but it
+would drastically improve the readability of the graph, as it would allow to
+clearly see which task access which data. Having a clear and well organized
+graph is very important to keep the application maintainable and expandable.
+
+Secondly, with this method, it is not easy to have computation in C++. Indeed,
+have we have seen in the section \ref{sec:cholesky}, some parts of the code have
+been entirely rewritten in C++. The fact that we keep all the data as global
+variables in Fortran makes nearly impossible to have pure C++ or external
+\footnote{Here, external means that the sub-graphs uses other languages.}
+sub-graphs. For the data that flows into the global graph, we cannot allow
+having them defined in both languages, otherwise, this will require to have
+synchronisation tasks in which the data will be copied. Such tasks would have a
+tremendous impact on the performance.
+
+Finally, it would not be always possible to keep the types as they currently are
+in \gls{fds}. Indeed, as we said in the section \ref{sec:fdsdesc}, the simulator
+performs computation on meshes and this computation can be done on multiple
+node. Since this meshes belongs to the same geometrical area, after each
+computation, we have to synchronise the modifications that have been done on the
+stencils \footnote{Area around a mesh that is shared with other meshes} of the
+meshes. This is a problem that we will also have with the blocks on the \gls{hh}
+version. To perform all the updated efficiently, we will need to have a data
+structure that will represent the stencils, and this data structure doesn't
+exist in the \gls{fds} code yet. Moreover, we do not want this data structure to
+be implemented in Fortran. Firstly because it might be more difficult to
+implement (Fortran does not have all the tools that C++ has), and secondly
+because the code that will perform the update will be easier to write in C++.
+
+Working on this example program was very useful, primary as it helped to
+understand some parts of the code. Furthermore, this was a great demonstration
+of what could be done with \gls{hh} on the \gls{fds} code, and it allowed us to
+experiment with a part of the code extracted from the whole simulation.
+Unfortunately, the method that has been used here cannot be utilized for
+parallelizing the rest of the program, but we learned a lot from this exercise.
+In the next section, we will discuss the parallelization of the rest of the
+simulation.
 
 \subsection{The rest of the simulation}
 
