@@ -34,7 +34,7 @@ Smokeview result. The usage of this tool is described by \cite{smvguide}.
   \begin{center}
     \includegraphics[scale=0.5]{img/smvexample.png}
     \caption{Smokeview example}
-    \label{fig:label}
+    \label{fig:smvexample}
   \end{center}
 \end{figure}
 %}}}
@@ -170,7 +170,7 @@ blocks instead of the whole matrix.
 
 %- begin listing ------------------------------------------------------------{{{
 \begin{listing}[ht!]
-\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{Fortran}
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos,breaklines=true]{Fortran}
 SUBROUTINE COMPUTE_X_FLUX(IBEGIN, JBEGIN, KBEGIN, IEND, JEND, KEND) BIND(C, NAME = "computeXFlux")
 SUBROUTINE COMPUTE_Y_FLUX(IBEGIN, JBEGIN, KBEGIN, IEND, JEND, KEND) BIND(C, NAME = "computeYFlux")
 SUBROUTINE COMPUTE_Z_FLUX(IBEGIN, JBEGIN, KBEGIN, IEND, JEND, KEND) BIND(C, NAME = "computeZFlux")
