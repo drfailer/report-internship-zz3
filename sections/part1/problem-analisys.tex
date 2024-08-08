@@ -2,18 +2,48 @@
 %                               problem analisys                               %
 %------------------------------------------------------------------------------%
 
-\clearpage
+\clearpage{}
 \section{Problem analysis}
 
 The first thing that will need to be done is understanding how to use \gls{hh}.
 To do that, the easiest way is to follow the tutorials and create first programs
-to explore the various features of the library. We will describe some of these
-programs in this repport in order to present the \gls{hh}.
+to explore the various features of the library.\\
 
-The next step will be to study \gls{fds}'s source code and isolate the
-different parts that will be parallelized with \gls{hh}. \gls{fds} is written in
-Fortran and some part of the code are already parallelized with either MPI or
-OpenMP. The objective is not to rewrite the entire application in C++. Here, we
-want to keep the original code and split it into different library that will be
-used in the C++ code. Only a few critical algorithms will be entirely rewritten
-in C++ in order to optimize the performances.
+The next step will be to study \gls{fds}'s source code and isolate the different
+parts that will be parallelized with \gls{hh}. \gls{fds} is written in Fortran
+and some part of the code are already parallelized with either MPI or OpenMP.
+Originally, the objective was not to rewrite the entire application in C++. We
+wanted to keep the original code and split it into different libraries that
+would have been used in the C++ code. Only a few critical algorithms should have
+been entirely rewritten in C++ in order to optimize the performances. All the
+preliminary tests have been made with this idea in mind, however, we will see
+that we eventually came to the conclusion that this could not be possible
+because of the technical limitations of the compilers\footnote{These limitations
+are imposed by the standard and not the compilers themeselves.}. Furthermore,
+when the project has been started, our goal was to port \gls{fds} to \gls{hh}
+manually. Once again, after some first tests, we finally decided to automate the
+process. To do that, our goal is to create a refactoring tool that will perform
+\gls{ast} transformations and that will generate the code of the \gls{hh} graph.
+This report will briefly describe the specifications of this tool, however, it
+will not detail its creation since this project has just been started. It is
+good to mention that this could not have been predicted without a prior
+knowledge of the simulation's code, and the first tests that have been made have
+played an important role in the definition of the specifications of the tool.\\
+
+Concerning the serialization library, the primary idea to optimize it was to use
+binary serialization instead of a human-readable format. Indeed, the library
+originally used a JSON like format, however, the binary one is liter and does
+not need the usage of a \gls{parser}. Furthermore, another optimization will be
+to use strings instead of streams. Indeed, as we will explain, the streams are
+usually implemented with a linked list. They require to frequently access the
+RAM of the computer wherease the strings are arrays that can be easily loaded in
+the CPU cache.\\
+
+Some features will also be added to the library in order to make it more
+powerfull. The first version laked the support for static and dynamic arrays.
+Furthermore, some data structure can be difficult to serialize because of
+pointers. A workarround to this issue is to give the possiblity to the user to
+execute code during the serialization, so new serializer will accept functions.
+Finally, the old version used some macros that was generating a lot of code and
+that was very difficult to maintain. This macro has to be removed in order for
+the library to be usable.
