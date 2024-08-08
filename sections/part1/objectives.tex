@@ -8,11 +8,11 @@
 The objective of the internship is to study the usage of \gls{hh} and the
 data-flow graphs in the context of \gls{hpc} applications. One of the objectives
 of the project was to use \gls{hh} to accelerate a simulation application called
-\gls{fds}.
+\gls{fds}.\\
 
 \gls{hh} is a \gls{hpc} library written in C++ and created at the NIST. It uses
 data-flow graphs to express algorithms composed of tasks that can be run
-asynchronously. This library will be described in the section \ref{sec:hh}.
+asynchronously. This library will be described in the section \ref{sec:hh}.\\
 
 \gls{fds} is a fire simulation also created at the NIST. The simulator reads a
 configuration file, solve the fluid dynamics equations and output the results
@@ -21,7 +21,7 @@ into files that can be analysed directly or used with other programs. Currently,
 and OpenMP. The objective is not to study the mathematical model behind the
 simulation. This is to understand how the code is organized and how it processes
 the data, in order to be able to design a \gls{hh} graph that will orchestrate
-the simulation.
+the simulation.\\
 
 Another goal of the internship is to contribute to the development of \gls{hh}.
 Currently, the library is not able to run on multiple nodes on clusters. The
