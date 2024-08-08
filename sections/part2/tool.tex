@@ -1,0 +1,42 @@
+%------------------------------------------------------------------------------%
+%                                     tool                                     %
+%------------------------------------------------------------------------------%
+
+\section{Automatic graph generation}
+
+In the section \ref{sec:fdsconcl}, we have seen that porting \gls{fds} to
+\gls{hh} was a very difficult task that couldn't be done manually. Furthermore,
+this was not a method that could be easily used on even bigger project.
+Fortunately, after parallelizing different algorithms with \gls{hh}, we have
+noticed some common patterns. For instance, the operation of splitting the code
+into simple functions, that can be bound to tasks in the graph, is done multiple
+times. Another example would be the operation of analysing the data used by a
+function or an algorithm, to determine the form of the data that will flow into
+the graph. With these observations we wonder if it is possible to create a tool
+that would be able to perform these operations automatically. To answer this
+question, we have started a new project in collaboration with \textit{Semantic
+Designs}, which is a company that has a lot of experience with the technologies
+that will we use to create our tool. In this section, we will briefly describe
+the specifications of the tools as well as some ideas that we currently have to
+implement it. We will not go further into the details because we are just at the
+beginning of the project.
+
+\subsection{Specifications}
+
+The purpose of the tool will be to translate the code into C++ then refactor it
+and build a graph. There are two reasons why we want to translate the code into
+C++ before modifying it. The first one is that this will make us able to work
+with any language. Indeed, we will not be able to perform the same transformations
+on the code depending on the language, so it will be easier to work only with
+C++. The second reason come for a technical limitation of the compilers imposed
+by the standard. In fact, \gls{fds} manipulates a very large number of data,
+and some of the subroutines uses a lot of variables. For now the variables are
+global. However, if we want to manage the memory in C++, we will have to pass
+these variables as parameters. According to the C standard \cite{cstd}, there
+can be a maximum of 127 parameters in a function, and this could potentially be
+a limitation in our case.
+
+%todo cite c standard
+%todo: c and c++ -> iso c binding
+
+\subsection{Implementation}

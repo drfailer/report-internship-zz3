@@ -3,6 +3,7 @@
 %------------------------------------------------------------------------------%
 
 \section{FDS}
+\label{sec:fds}
 
 In this section, we will explain what is \gls{fds}, and we will describe some of
 the work that has been realized on this tool.
@@ -356,7 +357,8 @@ parallelizing the rest of the program, but we learned a lot from this exercise.
 In the next section, we will discuss the parallelization of the rest of the
 simulation.
 
-\subsection{The rest of the simulation}
+\subsection{Conclusion}
+\label{sec:fdsconcl}
 
 For now, we have seen the work that has been done on different parts of the
 simulation. These part have been treated separately to try different methods for
@@ -367,7 +369,7 @@ seen why this is eventually not a good idea.
 
 To parallelize the entire simulation with \gls{hh} we have tried to tackle the
 problem from two sides. On the first side, the objective was to parallelize
-specific pieces of the application, as wee did for the velocity. From the other
+specific pieces of the application, as we did for the velocity. From the other
 side, the idea was to create the general graph and try to set up a pipeline
 threw the entire simulation. The role of the global graph is just to call
 Fortran subroutines. Our objective from this side is to refactor the graph in
@@ -380,10 +382,8 @@ precise enough. Eventually, we should end up having atomic tasks, and some of
 them can be run in parallel.
 
 This approach was logic, however, it is very difficult to do everything by hand
-due to the complexity and the size of the code base. Furthermore, doing this
-manually is not a method that is easily reproducible. For this reason, we have
-decided to try building a tool able to perform some automatic transformations on
-the code.
-
-% todo : reformulate the end and explain why we want to have tool and what it
-% does
+due to the complexity and the size of the code base (more than 160K lines of
+code). Furthermore, doing this manually is not a method that is easily
+reproducible. For this reason, we have decided to try building a tool able to
+perform some automatic transformations on the code. We will describe the
+specifications of the tool in the next section.
