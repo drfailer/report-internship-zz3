@@ -3,3 +3,33 @@
 %------------------------------------------------------------------------------%
 
 \section{State of the project}
+
+In this section, we will resume the work that has been done on \gls{fds} and the
+serialization library, then we will explain what remains to be done.
+
+\subsection{FDS}
+
+The project of porting \gls{fds} to \gls{hh} is far from being done yet. We have
+started by implementing some critical sections of the code such as the Cholesky
+or the computation of the velocity. Then we have tried to analyse and reorganize
+the code of the simulation. However, we eventually came to the conculsion that
+there was too much work that shouldn't be done manually. The \gls{fds} project
+has then been paused, and we have started to design a tool that we could use to
+automate the generation of a \gls{hh}. The work that as been realized on the
+simulation is important because it will help us to make choices in our future
+work.\\
+
+The tool that will automate the generation of the graphs hasn't been implemented
+yet. In fact, we only are in the early stages of the design, however, the first
+researches that have been made, and the first ideas that we have are promissing.
+The problem is definitely not trivial, and it may take several months before we
+are able to perform some basic transformations on the code.
+
+\subsection{The serialization library}
+
+The serialization library has been optimzed and some features have been added.
+There will be some more optimization that will be added in the future. For
+instance, the usage of the RTTI is slow, and we may be able to use some liter
+meta-data on the types like user defined enums. Once all the optimizations will
+be functional, we will be able to compare the performance of our library to the
+other ones on the market.
