@@ -8,6 +8,34 @@
 \section*{Introduction}
 \addcontentsline{toc}{section}{Introduction}
 
-TODO
+In this report, we will describe a project that has been realised at the
+National Institute of Standards and Technology, as part of the third year
+internship at the engineering school of ISIMA.\\
+
+The purpose of the project was to optimize a fire simulation program, called
+\gls{fds}, using a C++ library, called \gls{hh}, designed at the NIST. The
+simulation code is currently able to scale on multiple nodes, however, the
+performances within a node could be improved. Here we plan to use \gls{hh}
+and some \gls{hpc} techniques to accelerate the computation of the simulation
+within a node.
+
+Another objective will be to participate in the development of \gls{hh}.
+Currently, \gls{hh} is not able to run on multiple nodes. However, some
+researchers of the university of Utah are currently working on a port of
+\gls{hh} to clusters. To achieve their goal, they will need a serialization
+library in order to transfer the data on the network. Here, we plan to use a
+serialization library originally designed as part of an ISIMA's project. This
+library will need to be optimized in order to be usable in \gls{hpc}
+applications.\\
+
+The report will start be a presentation of \gls{hh} and its features. Then we
+will describe the implementation of the Cholesky decomposition (used in
+\gls{fds}) using the library. This will serve as a first example on how \gls{hh}
+can be used. In the third part, we will explain \gls{fds} and some of the work
+that has been realised on the simulation's code. After that, we will briefly
+introduce a new project that consists in the creation of a tool that will help
+us in our effort of porting \gls{fds} to \gls{hh}. Then we will detail the
+modifications that have been brought to the serialization library before
+concluding the report.
 
 \clearpage{}
