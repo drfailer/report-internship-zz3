@@ -26,17 +26,60 @@ beginning of the project.
 The purpose of the tool will be to translate the code into C++ then refactor it
 and build a graph. There are two reasons why we want to translate the code into
 C++ before modifying it. The first one is that this will make us able to work
-with any language. Indeed, we will not be able to perform the same transformations
-on the code depending on the language, so it will be easier to work only with
-C++. The second reason come for a technical limitation of the compilers imposed
-by the standard. In fact, \gls{fds} manipulates a very large number of data,
-and some of the subroutines uses a lot of variables. For now the variables are
-global. However, if we want to manage the memory in C++, we will have to pass
-these variables as parameters. According to the C standard \cite{cstd}, there
-can be a maximum of 127 parameters in a function, and this could potentially be
-a limitation in our case.
+with any language. Indeed, we will not be able to perform the same
+transformations on the code depending on the language, so it will be easier to
+work only with C++. The second reason comes for a technical limitation of the
+compilers imposed by the standard. In fact, \gls{fds} manipulates a very large
+number of data, and some of the subroutines use a lot of variables. For now the
+variables are global. However, if we want to manage the memory in C++, we will
+have to pass these variables as parameters. According to the C standard
+\cite{cstd}, there can only be a maximum of 127 parameters in a function, and
+this could potentially be a limitation in our case\footnote{This is the C
+standard and not the C++ one since the functions that are bind to the Fortran
+subroutines are \texttt{extern "C"}.}. In fact, the only way we have to pass
+variables to Fortran subroutines is by using pointers on fundamental types. It
+is not possible to bind a Fortran type to a C structure that contains pointers
+\cite{fortranbindstruct}. Because of this limitation, if a subroutine needs to
+access more than 127 elements that are not fundamental (arrays for instance), it
+will not be possible to call this subroutine from C++.
 
-%todo cite c standard
-%todo: c and c++ -> iso c binding
+After the translation of the source language into C++, the tool must be able to
+make some changes to the code. For instance, it must be able to remove all
+global variables automatically. Of course, it is not trivial because there are a
+lot of things to take into account (is a variable used elsewhere, should it be
+local anyway\footnote{In FDS, loops variables can be global.}, \dots). Another
+operation that the tool should be able to perform would be the reorganization of
+the code into functions. Most importantly, this reorganization must be done in a
+way that allows parallelism. Once the code is reorganized, we also want to be
+able to generate the graph automatically. This involves even more complexity
+because besides of generating the tasks, we also have to generate the types of
+the data that will flow into the graph.
+
+The tools should also have some additional secondary features. We plan to add
+special comments to the code (with a syntax similar to doxygen), to give some
+indications to the tool on how to reorganize the code. For instance, we may have
+a \textit{task} or a \textit{graph} comment that will indicate to the tool that
+a certain section of the code will be part of a task or a sub-graph. Finally,
+we also want to create a special language that will be used to automate some
+operations on the code (extract a function for instance). The objective is to be
+able to train a \gls{llm} to generate these operations.
+
+Now that we have defined the specifications of the tool, shall we talk about the
+implementation.
 
 \subsection{Implementation}
+
+Implementing this tool will require a transpiler that will parse the Fortran
+code and translate it in C++. Then we want to be able to modify the C++
+\gls{ast} of the program in order to perform the operations that we have
+described earlier. The code will be changed in similar way than this would be
+done with a compiler, however, here the objective is not to optimize the code
+but to generate a \gls{hh} graph. Fortunately, \textit{Semantic Designs} already
+have some libraries and tools that we will be able to use for transpiling the
+code and change the \gls{ast}. Of course, their \gls{parser} will be changed in
+order to support the new comment syntax.\\
+
+This tool will be a very interesting and useful project that will utilize the
+compilers technologies in a very unusual way. For now, we plan to focus on
+generating code for \gls{hh}, but some other directions could be explored in the
+future.
