@@ -565,16 +565,26 @@ struct Node {
 \end{listing}
 %- end listing --------------------------------------------------------------}}}
 
+\subsection{The performances}
+
+Despite the fact that the performances of the library have been improved
+compared to the previous version, it remains a lot slower compared to other
+libraries such as \textit{cereal} or \textit{cista}. Binary serialization itself
+is not enough to obtain good performances, and it must be used alongside other
+techniques. Furthermore, the way we access the members may not be the fastest
+one, and serializing an element requires a lot of function calls, which may have
+a huge cost at runtime.
+
 \subsection{Conclusion}
 
 In this section, we have described the concept behind the serialization library,
 and we have explained how it has been optimized. The usage of binary
 serialization and simpler data structures that do not involve many pointers such
-as the strings allowed us to improve the perfomances compared to the previous
-version of the library. Of course, the performances of this new version should
-be compared to another library and this will be done in the future when the new
-version will be released (for now it is in beta). Futhermore, the code has been
-improved by removing the convertor macro. Finally, some new features have been
-added to enhance the capabilities of this tool. Static and dynamic arrays are
-now serializable, and we can also execute code during the serialization or the
-deserialization.
+as the strings allowed us to improve the performances compared to the previous
+version of the library. However, even if the performances have been improved,
+they remain far bellow those of the best serialization library available on the
+market. More optimizations should be added in the future if we want to use this
+library with \gls{hh}. Furthermore, the code has been improved by removing the
+convertor macro. Finally, some new features have been added to enhance the
+capabilities of this tool. Static and dynamic arrays are now serializable, and
+we can also execute code during the serialization or the deserialization.
