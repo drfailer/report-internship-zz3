@@ -6,9 +6,58 @@
 \section*{Abstract}
 % \addcontentsline{toc}{section}{Abstract}
 
- Keywords:.
+This report describes the work, that has been realized at the NIST, on a project
+that concisted in the optimization of a fire simulation. The objective was to
+improve the computing performance of \gls{fds}, on single computing node, using
+a C++ library called \gls{hh}. This library uses data-flow graphs to represent
+parallel algorithms. The repport also describes the improvements that have been
+made to a serialization library, with the objective of utilizing it to transfer
+data on the network on the cluster version of \gls{hh}.\\
+
+Some simple algorithms such as the Cholesky's decomposition have been
+implemented to demonstrate the capabilities of \gls{hh}. On this algorithm, we
+managed to have slightly better performances than the openblas implementation.
+Some parts of the simulation have also been optimized. Eventually, we came to
+the conclusion that parallelizing \gls{fds} by hand was too difficult, and we
+decided to implement a tool that could automate a part of the process. This tool
+is briefly introduced in this report, however, it is not implemented yet.
+
+For the serialization library, some new features have been added. However,
+dispite the fact that some parts of the library have been optimized, the current
+performances are still far bellow the best serialization libraries on the
+market. The library still proposes a unique design, and more optimizations will
+be made in the future.\\
+
+Keywords: \textbf{C++}, \textbf{HPC}, \textbf{Hedgehog}, \textbf{FDS},
+\textbf{simulation}, \textbf{serialization}.
 
 \section*{Résumé}
 % \addcontentsline{toc}{section}{Résumé}
 
- Mots-clés:.
+Ce rapport décrit le travail, réalisé au NIST, sur un projet consistant en
+l'optimisation d'une simulation de feu. L'objectif était d'améliorer les
+performances de calcul de \gls{fds}, sur un unique nœud de calcul, en utilisant
+une bibliothèque nommée \gls{hh}. Cette bibliothèque utilise des data-flow
+graphs pour modéliser des algorithmes parallèles. Ce rapport décrit aussi les
+améliorations qui ont été apportées à une bibliothèque de sérialisation, avec
+pour objectif de l'utiliser pour transférer des données sur la version cluster
+de \gls{hh} (version utilisée sur un cluster de calcul).\\
+
+Des algorithmes simples tels que la décomposition de Cholesky ont été
+implémentés pour démontrer les capacités de \gls{hh}. Sur cet algorithme, nous
+avons réussi à obtenir de meilleures performances que l'implémentation de
+openblas. Des parties de la simulation ont été optimisées. Finalement, nous
+avons conclu que paralléliser \gls{fds} à la main été trop difficile. Nous avons
+donc décidé d'implémenter un outils capable d'automatiser en partie cette tâche.
+Cet outil est brièvement décrit dans ce rapport, cependant, il n'est pas encore
+implémenté.
+
+Quant à la bibliothèque de sérialisation, de nouvelles fonctionnalités ont été
+ajoutées. Cependant, bien que certaines parties de la bibliothèque aient été
+optimisées, les performances actuelles sont encore bien en dessous de celles des
+meilleures bibliothèques du marcher. La bibliothèque propose tout de même des
+choix de conception unique, et plus d'optimisations seront apportées dans le
+futur.\\
+
+Mots-clés: \textbf{C++}, \textbf{HPC}, \textbf{Hedgehog}, \textbf{FDS},
+\textbf{simulation}, \textbf{serialisation}.
