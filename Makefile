@@ -1,4 +1,4 @@
-pdf: main.tex refs.bib
+pdf: main.tex refs.bib clean
 	pdflatex -shell-escape main.tex
 	makeglossaries main
 	biber main

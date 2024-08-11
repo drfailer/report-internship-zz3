@@ -22,9 +22,9 @@ implementation as it is one of the fastest currently available.
 \label{sec:choalgo}
 
 The Cholesky algorithm is used to solve systems of linear equations of the form
-$Ax = y$, where $A \in M_{n,n}(\mathbb{R})$ is symmetric and positive-definite
+$Ax = y$, where $A \in M_{n,n}(\mathrm{R})$ is symmetric and positive-definite
 \cite{choleskywiki}. The principle is to decompose the matrix $A$ into a matrix
-$L$ such that $A = LL^{T}$, where $L \in M_{n,n}(\mathbb{R})$ is a lower
+$L$ such that $A = LL^{T}$, where $L \in M_{n,n}(\mathrm{R})$ is a lower
 triangular matrix. We then solve the two sub-problems: $Lx' = y$ and $L^{T}x =
 x'$.
 
