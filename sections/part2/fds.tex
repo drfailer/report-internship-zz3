@@ -168,6 +168,7 @@ listing \ref{lst:looproutines}. Here we can see as well that we use the ISO C
 bindings to be able to call the subroutines from C++. The original loops have
 been moved in the new subroutines and have been modified to iterate over the
 blocks instead of the whole matrix.
+\clearpage{}
 
 %- begin listing ------------------------------------------------------------{{{
 \begin{listing}[ht!]
@@ -221,6 +222,7 @@ steps:
     shown on the graph, all those three tasks are executed in parallel.
   \item Computation of the mean
 \end{itemize}
+\clearpage{}
 
 % [3D loops graph] {{{
 \begin{figure}[h!]
@@ -238,7 +240,6 @@ have three queues of data. If we had only one tasks, all the blocks for each
 axis would have been in the same queue. To optimize the dequeue time, we use
 multiple tasks that run in parallel, and each of these task have its own queue.
 
-\clearpage{}
 \subsubsection{The results}
 
 Now that we have explain how the graph has been implemented, we can describe the
@@ -256,6 +257,7 @@ programs. As we can see, the \gls{hh} program is quite faster that the
 \gls{fds} one. Furthermore, as shown by the standard deviation, it is way more
 consistent. This shows that just by using block decomposition, we are able to
 have a faster and more consistent program.
+\clearpage{}
 
 % [Computation times] {{{
 \begin{figure}[ht!]
