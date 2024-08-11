@@ -285,7 +285,7 @@ so the acceleration of the \gls{hh} program is very high.
 
 Finally, we can see on the figure \ref{fig:loopsrelativespeedup} the relative
 speedup for each program. This relative speedup is not very high for both of the
-programs which means that we don't reach enough parallelism \footnote{In our
+programs which means that we do not reach enough parallelism \footnote{In our
 case, having a lot of parallelism means that we use all the resources of the
 processors.} yet. For \gls{hh} this can be explained by the fact that the chosen
 block size is not optimal. For these measures, the block size was
@@ -342,7 +342,7 @@ computation, we have to synchronise the modifications that have been done on the
 stencils \footnote{Area around a mesh that is shared with other meshes} of the
 meshes. This is a problem that we will also have with the blocks on the \gls{hh}
 version. To perform all the updated efficiently, we will need to have a data
-structure that will represent the stencils, and this data structure doesn't
+structure that will represent the stencils, and this data structure does not
 exist in the \gls{fds} code yet. Moreover, we do not want this data structure to
 be implemented in Fortran. Firstly because it might be more difficult to
 implement (Fortran does not have all the tools that C++ has), and secondly
