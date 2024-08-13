@@ -6,27 +6,26 @@
 \section{Serialization library}
 
 In this section, we will present the optimizations added to a serialization
-library developed as a school project at ISIMA \cite{projectzz3isima}. The purpose
-of these optimizations is to make this library usable in \gls{hpc} application.
-In our context, the objective was to use this library to transfer datas between
-nodes using MPI on the cluster version of \gls{hh}.
+library developed as a school project at ISIMA \cite{projectzz3isima}. The
+purpose of these optimizations is to make this library usable in \gls{hpc}
+application. In our context, the objective was to use this library to transfer
+datas between nodes using MPI on the cluster version of \gls{hh}.
 
 \subsection{The principle}
 
-First, we are going to explain the principle of the library. We will not go to
-deeply into the detail as the intrinsic mechanisms of the library have not changed
-since the first version, which was already well described by
-\cite{projectzz3isima}.\\
+First, we are going to explain the principle behind the first version of the
+library. We will not go to deeply into the detail as it has already been
+described in \cite{projectzz3isima}.\\
 
-The basic purpose of the library has not changed. The objective is to be able to
-make C++ classes serializable by writing as little code as possible, similarly
-to what we could do with decorators in languages such as Java. The library
-provides macros that need to be used in the serialized classes. These macros
-generate the \texttt{serialize} and \texttt{deserialize} functions in the class.
-We can see on the listing \ref{lst:serexamplebase}, how we can make
-serializable, a class with two attributes. Here we use the macro
-\texttt{SERIALIZABLE}, that generate the serialization functions, and the macro
-\texttt{SERIALIZER} that initialize the \textit{serializer}.
+The basic purpose of the library is to be able to make C++ classes serializable
+by writing as little code as possible, similarly to what we could do with
+decorators in languages such as Java. The library provides macros that need to
+be used in the serialized classes. These macros generate the \texttt{serialize}
+and \texttt{deserialize} functions in the class. The listing
+\ref{lst:serexamplebase}, shows how to make a class serializable, using the
+interface of the first version of the library. The macro \texttt{SERIALIZABLE}
+generates the serialization functions, and the macro \texttt{SERIALIZER}
+initializes the \textit{serializer}.
 
 %- begin listing ------------------------------------------------------------{{{
 \begin{listing}[ht!]
@@ -49,27 +48,99 @@ serializable, a class with two attributes. Here we use the macro
 %- end listing --------------------------------------------------------------}}}
 
 The \textit{serializer} is an attribute added to the class by the first macro.
-It holds a data structure, the \texttt{MemberList} (previously called
-\texttt{AttrContainer}), that will store references to the attributes of the
-serialize class in order to be able to access their values or modify them. This
-data structure acts as a list in which each node can store a different type. It
-can also be compared to a \texttt{tuple}. In the generated serialization
-function, we call the methods of the \textit{serializer} which will start the
-serialization of the attributes in the member list.
+It holds a data structure, the \texttt{AttrContainer}, that will store
+references to the attributes of the serialize class in order to be able to
+access their values or modify them. This data structure acts as a list in which
+each node can store a different type. It can also be compared to a
+\texttt{tuple}. In the generated serialization function, we call the methods of
+the \textit{serializer} which will start the serialization of the attributes in
+the container. This mechanism has changed in the last version of the library, we
+will explain why in the section \ref{sec:sernewinterface}.
 
-To serialize the attribute, we use a special class called \texttt{Convertor}.
+To serialize the attributes, we use a special class called \texttt{Convertor}.
 This class is composed of very generic template functions that are able to
 convert most of the types of the standard library as well as some external types
 if they match certain conditions. This means that the user of the library do not
-need to make the translation of the serialized member by hand, everything is
-done automatically in the convertor. Furthermore, it is possible to create its
-own convertor class, either to add support for external types or to serialize
+need to make the translation of the serialized members by hand, everything is
+done automatically in the convertor. Furthermore, it is possible to create a
+custom convertor class, either to add support for external types or to serialize
 polymorphic objects (the library has to know which types it has to create during
 the deserialization). The class has been changed since the first version of the
 library. These changes will be explained in the section \ref{sec:convertor}.\\
 
-Now that we have explained the basic principle of the library, we will detail
-the optimizations and the features that have been added to it.
+Now that we have explained the basic principle of the first version of the
+library, we will detail the optimizations and the features that have been added
+to it, as well as the new interface.
+
+\subsection{The new interface}
+\label{sec:sernewinterface}
+
+The interface of the first version of the library had some very inconvenient
+limitations, and it was not as simple as it should have been. The new interface
+is even simpler and solves the issues present in the first one.\\
+
+The previous interface required the usage of two macros that were generating a
+lot of code. The macro \texttt{SERIALIZABLE} used to add a
+\texttt{\_\_serializer\_\_} attribute to the class. Because of this, the user
+had to implement the constructors, instead of using the ones that are generated
+by the compiler. In the end, a lot of useless additional code had to be written
+in order to handle the serializer attribute.
+
+Another issue of the old interface was the amount of intermediate layers. To
+serialize a class, we had to call the functions generated in the class by the
+macros. These functions where using the functions of the serializer that were
+using the attribute container that was calling the convertor methods. The
+usage of all these functions had a big cost on the performances. Furthermore, it
+appeared that the \texttt{AttrContainer} was slow because of the recursive
+calls.
+
+The new interface does not use the \texttt{AttrContainer} and the serializer
+anymore. Furthermore, only one macro, \texttt{SERIALIZE}, is used to generate
+the serialization functions. Listing \ref{lst:newinterfex} illustrates the usage
+of the new macro.
+
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+  class MyClass {
+    public:
+      MyClass(int x, double y) x_(x), y_(y) {}
+
+      // the class is now serializable
+      SERIALIZE(x_, y_);
+
+    private:
+      int x_ = 0;
+      double y_ = 0;
+  };
+\end{minted}
+\caption{Serializing a class with the new interface}
+\label{lst:newinterfex}
+\end{listing}
+%- end listing --------------------------------------------------------------}}}
+
+The generated serialization functions use external functions that call the
+convertor directly. Listing \ref{lst:externserialize} shows the implementation
+of the \texttt{serialize} function. The external function is used instead of
+generating the entire code directly as it is easier to maintain. Moreover, the
+convertor instantiated in the function is static. Indeed, the convertor holds no
+data, so it can be reused anytime the function is called. Using a static
+variable in this case avoid the need to rebuild the convertor object each time
+the function is called.
+
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+template <typename Conv, typename... Args>
+void serialize(std::string& str, mtf::serialize_arg_type<Args>... args) {
+  static Conv convertor;
+  ([&str, &args]{ convertor.serialize_(args, str); }(), ...);
+}
+\end{minted}
+\caption{External \texttt{serialize} function}
+\label{lst:externserialize}
+\end{listing}
+%- end listing --------------------------------------------------------------}}}
 
 \subsection{Binary serialization}
 
@@ -84,8 +155,8 @@ will always be serialized and deserialized in the same order, so we do not need
 this information anymore. Moreover, the previous format required to have
 separators in the string to identify the beginning and the end of objects,
 arrays, string (that had to be escaped manually\footnote{The string were
-represented between \texttt{'\"'}, so we had to escape potential the double quote
-character inside the string in order for them not to be considered as a
+represented between \texttt{'\"'}, so we had to escape potential the double
+quote character inside the string in order for them not to be considered as a
 separator during the deserialization.}), \dots
 
 To serialize fundamental types in binary, we use the \texttt{reinterpret\_cast}
@@ -196,14 +267,16 @@ for the attribute \texttt{s\_ptr}.
 
 \subsubsection{C-Struct optimization}
 
-It is possible, even in C++, to use \texttt{reinterpret\_cast} on
-\gls{cstruct}. Doing so is very fast, so it has been tried to split the member
-list in two parts, in order to extract the fundamental members and then generate
-a \gls{cstruct}. Such a structure could have been serialized faster than the
-member list since it would not have required the call to the functions of the
-convertor. Unfortunately, this optimization added a lot of complexity and
-splitting the member list had a cost at runtime. It has eventually been decided
-to abandon this feature.
+It is possible, even in C++, to use \texttt{reinterpret\_cast} on \gls{cstruct}.
+Doing this is very fast, however, the challenge is to know when it is feasible.
+Indeed, we cannot directly cast a structure that contains pointers or complex
+data structures like a vector. With the new interface, we could make the test by
+iterating on the list of the types of the serialized members. However, in this
+case, there is no guaranty that the user wants to serialize all the data in the
+class. There could be members with complex types that are not serialized and try
+to cast the structure wouldn't be optimized. The easiest way to know if it is
+possible to use the technique is by letting the user decide on its own. A
+dedicated macro has been added in the new interface.
 
 \subsection{Redesigning the convertor}
 \label{sec:convertor}
@@ -253,8 +326,8 @@ the listing \ref{lst:convert}.
 \begin{listing}[ht!]
 \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
 template <typename T> struct Convert {
-    virtual std::string &serialize(T const &, std::string &) const = 0;
-    virtual T deserialize(std::string_view &, T &) = 0;
+    virtual void serialize(T const &, std::string &) const = 0;
+    virtual void deserialize(std::string_view &, T &) = 0;
 };
 \end{minted}
 \caption{Convert class}
@@ -269,18 +342,22 @@ templates, and they use concepts from C++20 to match the types. The usage of
 concepts is very important in this case because they are more flexible than
 \gls{sfinae}. In fact, they easily permit the definition of fallback functions
 that will be called when a non-supported type is serialized. These fallback
-methods use the functions from \texttt{Convert} as we can see on the listing
-\ref{lst:fallbackserialize}.
+methods use the functions from \texttt{Convert} as we can see in the listing
+\ref{lst:fallbackserialize}. In these functions, exceptions are used to create
+useful error message at runtime. The choice of generating errors at runtime and
+not at compile time (using \texttt{static\_assert}) was made because the error
+message are clearer, and more readable as they are not lost in the compiler
+output.
 
 %- begin listing ------------------------------------------------------------{{{
 \begin{listing}[ht!]
 \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
   template <serializer::tools::concepts::NonSerializable T>
-  std::string &serialize_(T const &elt, std::string str) const {
+  void serialize_(T const &elt, std::string str) const {
       if constexpr (tools::mtf::contains_v<T, AdditionalTypes...>) {
           // we need a static cast because of implicit constructors (ex:
           // pointer to shared_ptr)
-          return static_cast<const Convert<T> *>(this)->serialize(elt, str);
+          static_cast<const Convert<T> *>(this)->serialize(elt, str);
       } else {
           throw serializer::exceptions::UnsupportedTypeError<T>();
       }
@@ -325,25 +402,16 @@ serialize arrays, we need to know their sizes. For this, we use
 \texttt{std::extent\_v}. Here, \texttt{std::extent\_v<T[N]>} returns \texttt{N}.
 However, this requires that the user specifies the size of the array (we cannot
 accept \texttt{T[]}). The conversion function is recursive and uses
-\texttt{std::remove\_extent\_t} to convert multidimensional arrays. On the
-listing \ref{lst:serstaticarr}, we can see an example of static arrays
-serialization. The class \texttt{MyClass} holds two static arrays:
-\texttt{arr\_} which is a one-dimensional array and \texttt{grid\_} which is a
-two-dimensional array. Here, both of the arrays are of type \texttt{int},
-however, it would work with any other type as soon as it is supported by default
-or serializable.
+\texttt{std::remove\_extent\_t} to convert multidimensional arrays. The listing
+\ref{lst:serstaticarr}, illustrate static arrays serialization.
 
 %- begin listing ------------------------------------------------------------{{{
 \begin{listing}[ht!]
 \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
 class MyClass {
-    SERIALIZABLE(int[10], int[10][10]);
-
   public:
-    WithStaticArrays():
-      SERIALIZER(arr_, grid_) {}
-
     /* ... */
+    SERIALIZE(arr_, grid_);
 
   private:
     int arr_[10];
@@ -411,24 +479,18 @@ The size of \texttt{arr2D\_} is then stored in a variable that is serialized and
 that is taken by reference by the \texttt{DynamicArray} constructor as we have
 explained previously.
 
-%todo: example
 %- begin listing ------------------------------------------------------------{{{
 \begin{listing}[ht!]
 \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
 class MyClass {
-    SERIALIZABLE(size_t, size_t, SER_DARR_T(int *, size_t),
-                 SER_DARR_T(int **, size_t &, size_t));
-
   public:
-    explicit MyClass()
-        : SERIALIZER(arr2DHeight_, SER_DARR_T(int *, size_t)(arr1D_, 5),
-              SER_DARR_T(int **, size_t &, size_t)(arr2D_, arr2DHeight_, 2)),
-          arr1D_(new int[5]) { }
+    explicit MyClass() : arr1D_(new int[5]) { }
     ~MyClass() { /* free memory */ }
-
     void allocArr2D(size_t arr2DHeight) { /* ... */ }
-
     /* ... */
+    SERIALIZE(arr2DHeight_,
+              SER_DARR_T(int *, size_t)(arr1D_, 5),
+              SER_DARR_T(int **, size_t &, size_t)(arr2D_, arr2DHeight_, 2));
 
   private:
     int *arr1D_ = nullptr;
@@ -443,29 +505,29 @@ class MyClass {
 
 \subsubsection{Functions}
 
-Finally, now we can give functions to the serializer. These functions can be
-executed at any stage of serialization or the deserialization. They can be used
-to handle specific cases, where we want to serialize a member manually. For
-example, we can use them for serializing complex objects with cyclic references.
-Indeed, the library is not able to detect if a pointer or a reference as already
-bin serialized. It would be possible to perform this verification, however, this
-would be slow. Now, to do that, we can use a function that will either just
-create a link during the deserialization (link the child to it's father in a
-tree) or perform more complex operations (coloring nodes when serializing a
-cyclic graph). The functions can be defined globaly or inside the class using
-either a lambda expression or a static function in case we need to access the
-private members of the class.
+Finally, it is now possible to execute functions at any stage of serialization
+or the deserialization. Functions can be used to handle specific cases, where we
+want to serialize a member manually. For example, we can use them for
+serializing complex objects with cyclic references. Indeed, the library is not
+able to detect if a pointer or a reference as already been serialized. It would
+be possible to perform this verification, however, this would be slow. Now, to
+do that, we can use a function that will either just create a link during the
+deserialization (link the child to it's father in a tree) or perform more
+complex operations (coloring nodes when serializing a cyclic graph). The
+functions can be defined globally or inside the class using either a lambda
+expression or a static function in case we need to access the private members of
+the class.
 
 From the library's developer point of view, these functions can be used for
 debugging. In fact, as we have already explained, the attributes are serialized
-in the order they appear in the member list, and this is also the case for
+in the order they appear in the macro parameters, and this is also the case for
 functions. For instance, we could use the functions to print the values of each
 member, as well as the value of the serialized string, before and after they are
 serialized.
 
-Of course, it is not possible to give any function to the serializer. For now,
-the only type that is accepted is the type \texttt{function\_t} as we can see on
-the listing \ref{lst:functiont} bellow.
+Of course, it is not possible to use any function, for now, the only type that
+is accepted is the type \texttt{function\_t} as we can see in the listing
+\ref{lst:functiont} bellow.
 
 %- begin listing ------------------------------------------------------------{{{
 \begin{listing}[ht!]
@@ -477,7 +539,7 @@ using function_t = std::function<void(Phases, std::string_view const &)>;
 \end{listing}
 %- end listing --------------------------------------------------------------}}}
 
-Here we cann see that the functions take two parameters:
+Here we can see that the functions take two parameters:
 
 \begin{itemize}
   \item The phase that is either \texttt{Phases::Serialization} or
@@ -493,22 +555,22 @@ Here we cann see that the functions take two parameters:
 It is important to mension that the type \texttt{function\_t}, as well as the
 type \texttt{DynamicArray}, are the only types that are not taken by reference
 by the member list constructor. This is due to the fact that we want to be able
-to create the objects directly in the \texttt{SERIALIZER} macro. To achieve
-this, we use a dedicated meta-function, as shown on the listing
-\ref{lst:mlargtype}.
+to create the objects directly in the \texttt{SERIALIZE} macro. To achieve this,
+we use a dedicated meta-function, shown in the listing \ref{lst:mlargtype}.
 
 %- begin listing ------------------------------------------------------------{{{
 \begin{listing}[ht!]
 \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
-  // reference attribute
-  tools::mtf::ml_arg_type_t<H> reference;
+template <typename T> struct arg_type { using type = T &; };
 
-  // constructor
-  explicit MemberList(tools::mtf::ml_arg_type_t<H> head,
-                      tools::mtf::ml_arg_type_t<Types>... types)
-      : reference(head), next(types...) {}
+template <> struct arg_type<function_t> { using type = function_t; };
+
+template <typename T, typename DT, typename... DTs>
+struct arg_type<serializer::tools::DynamicArray<T, DT, DTs...>> {
+    using type = serializer::tools::DynamicArray<T, DT, DTs...>;
+};
 \end{minted}
-\caption{Usage of \texttt{ml\_arg\_type\_t} in the member list}
+\caption{Usage of \texttt{arg\_type\_t}}
 \label{lst:mlargtype}
 \end{listing}
 %- end listing --------------------------------------------------------------}}}
@@ -540,19 +602,18 @@ and the string view parameter is named \texttt{str}.
 \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
 template <typename T>
 struct Node {
-    SERIALIZABLE(T, Node<T> *, Node<T> *, serializer::function_t);
   public:
-    explicit Node(T value = 0)
-        : SERIALIZER(this->value, left, right, SER_DFUN({
-                         if (this->left)
-                             this->left->father = this;
-                         if (this->right)
-                             this->right->father = this;
-                     })),
-          value(value) {}
+    explicit Node(T value = 0): value(value) {}
     ~Node() { /* ... */ }
 
     /* ... */
+
+    SERIALIZE(this->value, left, right, SER_DFUN({
+         if (this->left)
+             this->left->father = this;
+         if (this->right)
+             this->right->father = this;
+     }))
 
     T value;
     Node<T> *father = nullptr;
@@ -560,20 +621,89 @@ struct Node {
     Node<T> *right = nullptr;
 };
 \end{minted}
-\caption{Example: using a serializer function for serializing a tree node}
+\caption{Example: using a function for serializing a tree node}
 \label{lst:treenode}
 \end{listing}
 %- end listing --------------------------------------------------------------}}}
 
 \subsection{The performances}
 
-Despite the fact that the performances of the library have been improved
-compared to the previous version, it remains a lot slower compared to other
-libraries such as \textit{cereal} or \textit{cista}. Binary serialization itself
-is not enough to obtain good performances, and it must be used alongside other
-techniques. Furthermore, the way we access the members may not be the fastest
-one, and serializing an element requires a lot of function calls, which may have
-a huge cost at runtime.
+The performances of the library have been drastically improved compared to the
+first version. However, the serialization remains slightly slower compared to
+other libraries such as \textit{cereal} or \textit{cista}. Comparisons between
+the libraries have been made using a benchmark repository available on GitHub:
+\texttt{felixguendling/cpp-serialization-benchmark}. The benchmark creates and
+serialize a graph with more that 18k nodes. Listing \ref{lst:graph} shows the
+structure that was used in the benchmark.
+
+%- begin listing ------------------------------------------------------------{{{
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
+struct serializer_graph {
+  SERIALIZE(nodes_);
+
+  struct edge {
+    SERIALIZE(from_, to_, weight_);
+    uint16_t from_, to_;
+    uint16_t weight_;
+  };
+
+  struct node {
+    SERIALIZE(id_, name_, out_, in_);
+    uint16_t id_;
+    std::string name_;
+    std::vector<edge> out_ = {};
+    std::vector<edge> in_ = {};
+  };
+  /* ... */
+  std::vector<node> nodes_ = {};
+};
+\end{minted}
+\caption{Graph structure of the benchmark}
+\label{lst:graph}
+\end{listing}
+%- end listing --------------------------------------------------------------}}}
+
+As shown by the results, the serialization is slower that most of the other
+libraries. However, in terms of memory usage, the library performs well.
+
+\begin{terminal}
+--------------------------------------------------------------------------
+Benchmark                Time             CPU   Iterations UserCounters...
+--------------------------------------------------------------------------
+capnp                  997 ms          997 ms            1 size=50.5093M
+cista_offset_slim     83.1 ms         83.1 ms            7 size=25.317M
+cereal                1109 ms         1108 ms            1 size=37.829M
+serializer            1728 ms         1728 ms            1 size=37.829M
+fbs                  11369 ms        11367 ms            1 size=62.998M
+cista_raw             7789 ms         7788 ms            1 size=176.378M
+cista_offset          8278 ms         8277 ms            1 size=176.378M
+zpp_bits              16.3 ms         16.3 ms           39 size=37.8066M
+\end{terminal}\leavevmode\newline
+
+These are the results for the deserialization. Here we can see that the
+deserialization is relatively efficient compared to the serialization.
+
+\begin{terminal}
+----------------------------------------------------------
+Benchmark                Time             CPU   Iterations
+----------------------------------------------------------
+capnp                0.003 ms        0.003 ms       227360
+cista_offset_slim     37.8 ms         37.8 ms           19
+fbs                   1386 ms         1385 ms            1
+cista_offset          2512 ms         2512 ms            1
+cista_raw             2346 ms         2346 ms            1
+cereal                1007 ms         1007 ms            1
+serializer            1004 ms         1004 ms            1
+zpp_bits              11.3 ms         11.3 ms           56
+cista_raw             1196 ms         1196 ms            1
+\end{terminal}\leavevmode\newline
+
+Some more optimizations will be done in the future to improve the serialization.
+Moreover, binary serialization itself might not be enough to obtain good
+performances, and should be used alongside other techniques. For instance, some
+libraries rely on hash or alignment to optimize the size of the result binary
+stream.
 
 \subsection{Conclusion}
 
@@ -581,10 +711,9 @@ In this section, we have described the concept behind the serialization library,
 and we have explained how it has been optimized. The usage of binary
 serialization and simpler data structures that do not involve many pointers such
 as the strings allowed us to improve the performances compared to the previous
-version of the library. However, even if the performances have been improved,
-they remain far bellow those of the best serialization library available on the
-market. More optimizations should be added in the future if we want to use this
-library with \gls{hh}. Furthermore, the code has been improved by removing the
-convertor macro. Finally, some new features have been added to enhance the
+version of the library. Furthermore, the code has been improved by removing the
+convertor macro. Some new features have also been added to enhance the
 capabilities of this tool. Static and dynamic arrays are now serializable, and
 we can also execute code during the serialization or the deserialization.
+Finally, even more optimizations should be added in the future to compete with
+the other libraries available on the market.

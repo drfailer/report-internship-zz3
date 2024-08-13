@@ -31,8 +31,13 @@ may be in the future, when the refactoring tool will be operational.
 The serialization library is a very interesting project with a unique design.
 The tools that we use in the library are not used in the other ones. The library
 has currently a lot of features. However, despite the optimizations that have
-been made, it remains slower that the other libraries on the market. This is an
-issue that will need to be solved if we want to use it with \gls{hh}.\\
+been made, it remains slower that the other libraries on the market. It is
+definitely usable with \gls{hh}, but it would be interesting to improve the
+performance even more.\\
 
-In the future, more optimizations will be added to accelerate the serialization
-and reduce the size of the serialized data.
+Another thing that could be an issue for some developers is the intensive usage
+of macros. Many users dislike macros in C++ because they hide a lot of generated
+code. Furthermore, the pereprocessor does not perform any verification when it
+generates the code, which increase the probabilities of making mistakes. Having
+an even simpler interface for using the library without the macros could be
+interesting.
