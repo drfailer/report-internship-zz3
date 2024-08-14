@@ -10,34 +10,34 @@ have obtained them. We will also talk about the future of the project.
 
 \subsection{FDS}
 
-When we have started to work on \gls{fds}, we thought that it was possible to
-port the code to \gls{hh} manually. Some of the critical algorithms of the
-simulation have been rewritten with our library, and we managed to have good
-results. However, we eventually came to the conclusion that doing everything by
-hand was not the best method. Firstly, this was a very difficult task
-considering the size of the \gls{fds}'s code base and the large number of data
-that is used in the program. Secondly, this was not a reproducible method that
-could be applied on other projects. Even if some tasks are technically feasible,
-it is always important wonder if our methods can scale on bigger projects or can
-be easily reused. One of the most important role of a software engineer is the
-ability to formulate the method he has used to solve a basic problem, in order
-to automate it and reuse it on other problems.\\
+When we started working on \gls{fds}, we thought it was possible to port the
+code to \gls{hh} manually. Some of the critical algorithms of the simulation
+have been rewritten with our library, and we managed to have good results.
+However, we eventually came to the conclusion that doing everything by hand was
+not the best method. Firstly, this was a very difficult task considering the
+size of the \gls{fds}'s code base and the large number of data that is used in
+the program. Secondly, this method is not reproducible and cannot be applied on
+other projects. Even if some tasks are technically feasible, it is always
+important wonder if our methods can scale on bigger projects or can be easily
+reused. One of the most important roles of a software engineer is the ability to
+formulate the method he used to solve a problem, in order to automate it and
+reuse it later on.\\
 
-For now, the simulation has not been optimized with \gls{hh} yet. However, it
+Currently, the simulation has not been optimized with \gls{hh} yet. However, it
 may be in the future, when the refactoring tool will be operational.
 
 \subsection{The serialization library}
 
 The serialization library is a very interesting project with a unique design.
-The tools that we use in the library are not used in the other ones. The library
-has currently a lot of features. However, despite the optimizations that have
-been made, it remains slower that the other libraries on the market. It is
-definitely usable with \gls{hh}, but it would be interesting to improve the
-performance even more.\\
+The tools employed in the library are not used in the other ones. The library
+has currently a lot of features. However, despite the optimizations implemented,
+it is still slower that the other libraries on the market. It is definitely
+usable with \gls{hh}, but it would be interesting to improve the performance
+even more.\\
 
-Another thing that could be an issue for some developers is the intensive usage
-of macros. Many users dislike macros in C++ because they hide a lot of generated
-code. Furthermore, the pereprocessor does not perform any verification when it
-generates the code, which increase the probabilities of making mistakes. Having
-an even simpler interface for using the library without the macros could be
-interesting.
+Another potential issue for some developers is the heavy use of macros. Many
+users dislike macros in C++ because they hide a lot of generated code.
+Additionally, the preprocessor does not perform any verification when it
+generates the code, which increase the probabilities of errors. Providing an
+even simpler interface for using the library without the macros could be
+beneficial.
