@@ -4,33 +4,31 @@
 
 \section{State of the project}
 
-In this section, we will resume the work that has been done on \gls{fds} and the
+In this section, we will resume the work that was done on \gls{fds} and the
 serialization library, then we will explain what remains to be done.
 
 \subsection{FDS}
 
-The project of porting \gls{fds} to \gls{hh} is far from being done yet. We have
-started by implementing some critical sections of the code such as the Cholesky
-or the computation of the velocity. Then we have tried to analyse and reorganize
-the code of the simulation. However, we eventually came to the conculsion that
-there was too much work that should not be done manually. The \gls{fds} project
-has then been paused, and we have started to design a tool that we could use to
-automate the generation of a \gls{hh}. The work that as been realized on the
-simulation is important because it will help us to make choices in our future
-work.\\
+The project of porting \gls{fds} to \gls{hh} is not done yet. We began by
+implementing critical sections of the code such as the Cholesky decomposition or
+velocity computaiton. Then we tried to analyse and reorganize the simulation
+code. However, we eventually concluded that, due to the amout of work, this
+process should not be done manually. The \gls{fds} project was then paused, and
+we began the design of a tool that we could be used to automate the generation
+of a \gls{hh} graph. The work completed on the simulation is important because
+it will help us to make choices in our future work.\\
 
 The tool that will automate the generation of the graphs has not been
-implemented yet. In fact, we only are in the early stages of the design,
-however, the first researches that have been made, and the first ideas that we
-have are promissing. The problem is definitely not trivial, and it may take
-several months before we are able to perform some basic transformations on the
-code.
+implemented yet. We currently are in the early stages of the design. However,
+the initial research and ideas we are promising. The problem is definitely not
+trivial, and it may take several months before we can perform even basic
+transformations on the code.
 
 \subsection{The serialization library}
 
-The serialization library has been optimized compared to the previous version,
-and some features have been added. There will be some more optimization that
+The serialization library has been optimized compared to the previous version
+and now includes some additional features. There will be more optimization that
 will be added in the future since the serialization is still slower compared to
-the other libraries available on the market. Furthermore, the new interface is
+the other libraries available on the market. Additionally, the new interface is
 even simpler and more flexible, allowing the user to serialize classe by using
 only one macro.
