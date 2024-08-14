@@ -5,27 +5,28 @@
 \section*{Abstract}
 % \addcontentsline{toc}{section}{Abstract}
 
-This report describes the work conducted at the NIST, on a project that
-consisted in the optimization of a fire simulation. The objective was to improve
-the computing performance of \gls{fds}, on single computing node, using a C++
-library called \gls{hh}. This library uses data-flow graphs to represent
-parallel algorithms. The report also describes the improvements that have been
-made to a serialization library, with the objective of utilizing it to transfer
-data on the network on the cluster version of \gls{hh}.\\
+This report describes the research performed at NIST, for optimizing a fire
+simulation. The objective was to improve the computing performance of \gls{fds},
+on single computing node, using a C++ library called \gls{hh}. This library
+represents parallel algorithms as data-flow graphs. The report also describes the
+improvements that have been made to a serialization library, with the objective
+of utilizing it to transfer data on the network on the cluster version of
+\gls{hh}.\\
 
-Some simple algorithms such as the Cholesky's decomposition have been
-implemented to demonstrate the capabilities of \gls{hh}. On this algorithm, we
-managed to have slightly better performances than the OpenBLAS implementation.
-Some parts of the simulation have also been optimized. Eventually, we came to
-the conclusion that parallelizing \gls{fds} by hand was too difficult, and we
-decided to implement a tool that could automate a part of the process. This tool
-is briefly introduced in this report, however, it is not implemented yet.
+\gls{fds} is composed, amongst other algorithms, over Cholesky decomposition.
+A version using \gls{hh} was implemented to demonstrate the library's
+capabilities. We eventually managed to have a slightly better performance than
+the OpenBLAS implementation. Some parts of the fire simulation have also been
+optimized. Eventually, we came to the conclusion that parallelizing \gls{fds} by
+hand was too difficult, and we decided to implement a tool that could automate a
+part of the process. This tool is briefly introduced in this report, however, it
+is not implemented yet.
 
 For the serialization library, some new features have been added. However,
-dispite the fact that some parts of the library have been optimized, the current
-performances are still far below the best serialization libraries on the
-market. The library still proposes a unique design, and more optimizations will
-be made in the future.\\
+despite the fact that some parts of the library have been optimized, the current
+performance are still far below the best serialization libraries available. The
+library still proposes a unique design, and more optimizations will be made in
+the future.\\
 
 Keywords: \textbf{C++}, \textbf{HPC}, \textbf{Hedgehog}, \textbf{FDS},
 \textbf{simulation}, \textbf{serialization}.
@@ -35,21 +36,21 @@ Keywords: \textbf{C++}, \textbf{HPC}, \textbf{Hedgehog}, \textbf{FDS},
 
 Ce rapport décrit le travail, réalisé au NIST, sur un projet consistant en
 l'optimisation d'une simulation de feu. L'objectif était d'améliorer les
-performances de calcul de \gls{fds}, sur un unique nœud de calcul, en utilisant
+performance de calcul de \gls{fds}, sur un unique nœud de calcul, en utilisant
 une bibliothèque nommée \gls{hh}. Cette bibliothèque utilise des data-flow
 graphs pour modéliser des algorithmes parallèles. Ce rapport décrit aussi les
 améliorations qui ont été apportées à une bibliothèque de sérialisation, avec
 pour objectif de l'utiliser pour transférer des données sur la version cluster
 de \gls{hh} (version utilisée sur un cluster de calcul).\\
 
-Des algorithmes simples tels que la décomposition de Cholesky ont été
-implémentés pour démontrer les capacités de \gls{hh}. Sur cet algorithme, nous
-avons réussi à obtenir de meilleures performances que l'implémentation de
-OpenBLAS. Des parties de la simulation ont été optimisées. Finalement, nous
-avons conclu que paralléliser \gls{fds} à la main été trop difficile. Nous avons
-donc décidé d'implémenter un outil capable d'automatiser en partie cette tâche.
-Cet outil est brièvement décrit dans ce rapport, cependant, il n'est pas encore
-implémenté.
+\gls{fds} utilise la décomposition de Cholesky. Une version utilisant \gls{hh} a
+été implémentée pour démontrer les capacités de la bibliothèque. Nous avons
+finalement réussi à obtenir de meilleures performance que l'implémentation de
+OpenBLAS. Des parties de la simulation ont aussi été optimisées. Finalement,
+nous avons conclu que paralléliser \gls{fds} à la main été trop difficile. Nous
+avons donc décidé d'implémenter un outil capable d'automatiser en partie cette
+tâche. Cet outil est brièvement décrit dans ce rapport, cependant, il n'est pas
+encore implémenté.
 
 Quant à la bibliothèque de sérialisation, de nouvelles fonctionnalités ont été
 ajoutées. Cependant, bien que certaines parties de la bibliothèque aient été

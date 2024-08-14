@@ -6,39 +6,40 @@
 \section{Cholesky}
 \label{sec:cholesky}
 
-The initial tasks undertaken during the project was the implementation of the
-Cholesky decomposition. The work that will be described in this section has been
-realized to demonstrate the capabilities of \gls{hh}, and it has been done
-without any knowledge of how \gls{fds} operates. For these reasons, we will
-describe this work before explaining the principles of the simulator.\\
+The initial task undertaken during the project was the implementation of the
+Cholesky decomposition. The work that is described in this section was realized
+to demonstrate the capabilities of \gls{hh}, and it was done without any
+knowledge of how \gls{fds} operates. For these reasons, we will describe this
+work before explaining the principles of the simulator.\\
 
-\gls{fds}'s simulation requires solving equations. For this, they use the
-Cholesky algorithm, however, their current implementation is not fast enough. In
-this section, we will start by presenting the algorithm. Then we will explain
-the implementation with \gls{hh} before presenting the results. For the
-measurements, our implementation will be compared to the OpenBLAS's
-implementation as it is one of the fastest currently available.
+\gls{fds}'s simulation requires solving equations using the Cholesky
+decomposition algorithm. However, the current implementation in the simulation
+code is not fast enough. In this section, we will start by explaining the
+algorithm. Then we will explain the implementation with \gls{hh} before
+presenting the results. For the measurements, our implementation will be
+compared to the OpenBLAS's implementation as it is one of the fastest currently
+available.
 
 \subsection{The algorithm}
 \label{sec:choalgo}
 
-The Cholesky algorithm is used to solve systems of linear equations of the form
-$Ax = y$, where $A \in M_{n,n}(\mathrm{R})$ is symmetric and positive-definite
+The Cholesky algorithm solves systems of linear equations of the form $Ax = y$,
+where $A \in M_{n,n}(\mathrm{R})$ is symmetric and positive-definite
 \cite{choleskywiki}. The principle is to decompose the matrix $A$ into a matrix
 $L$ such that $A = LL^{T}$, where $L \in M_{n,n}(\mathrm{R})$ is a lower
-triangular matrix. We then solve the two sub-problems: $Lx' = y$ and $L^{T}x =
-x'$.
+triangular matrix. The algorithm then solves the two sub-problems: $Lx' = y$ and
+$L^{T}x = x'$.
 
-There are several ways to implement this algorithm. Here, we are going to
-implement the block version since it is the most suited for parallel computing.
-Indeed, one most of the important concepts of \gls{hpc} is optimizing CPU cache
+There are several ways to implement this algorithm. For this project, we
+implemented the block version as it is the most suited for parallel computing.
+Indeed, one of the most important concepts of \gls{hpc} is optimizing CPU cache
 usage. To achieve this, we will decompose our matrix into smaller blocks that
 can be entirely loaded into the cache, minimizing the need for the CPU to access
 the RAM.
 
 The version of the algorithm that we will use is described in
 \cite{choleskyblock}. This algorithm proceeds in three steps. First, consider
-the matrix $A$ shown in the figure \ref{fig:chodeca}. In this figure, $D$
+the matrix $A$ shown in Figure \ref{fig:chodeca}. In this example, $D$
 represents a diagonal block, $C$ is a column (composed of multiple blocks) and
 $A'$ is a sub-matrix.
 
@@ -55,10 +56,10 @@ $A'$ is a sub-matrix.
 The first step of the algorithm is to process the diagonal element $D$. To do
 this, we use the sequential version of the algorithm. It will be fast enough
 given the size of the block. The second step is to update the elements on the
-column beneath the diagonal block. To do this, we solve the system
-$C_{\text{new}} = C(D^{T})^{-1}$. Once this is done, we have computed the first
-column of the result matrix $L$. The final step consists of updating the rest of
-the matrix $A$ by performing $A' = A' - CC^{T}$.
+column beneath the diagonal block, by solving the system $C_{\text{new}} =
+C(D^{T})^{-1}$. Once this is done, the algorithm has computed the first column of the
+result matrix $L$. The final step consists of updating the rest of the matrix
+$A$ by performing $A' = A' - CC^{T}$.
 
 Once we have obtained the matrix $L$, we can proceed to the solving part to find
 the solutions of the system. This process can be decomposed in two steps: first,
@@ -70,15 +71,15 @@ sub-problems $Lx' = y$ and $L^{T}x = x'$.
 
 \subsection{Implementation}
 
-The implementation of the algorithm was done in two parts. The decomposition was
-implemented first, and once it was fully functional, the solver part has been
-added. This approach was chosen because the decomposition is the most critical
-part of the algorithm. It was important to compare our version with the
+The implementation of the algorithm was done in two parts. We began by
+implementing the decomposition, and once it was fully functional, the solver
+part was added. This approach was chosen because the decomposition is the most
+critical part of the algorithm. It was important to compare our version with the
 OpenBLAS's one before implementing the solver.
 
 The first implementation of the decomposition involved creating a graph that
-followed the steps described in the section \ref{sec:choalgo} similarly to
-OpenBLAS. This graph is shown in the figure \ref{fig:chograph}.
+followed the steps described in Section \ref{sec:choalgo} similarly to
+OpenBLAS. This graph is shown in Figure \ref{fig:chograph}.
 
 % [Cholesky decomposition graph] {{{
 \begin{figure}[!ht]
@@ -133,10 +134,10 @@ In this second version, several verifications are required, using the rank
 in the states. Furthermore, both of the states have a vector of block pointers
 that are shared between them to make sure that when the \textit{decompose state}
 changes a rank, the \textit{update state} can be aware of the modification
-directly, without any notification. This improves the performances but adds
+directly, without any notification. This improves the performance but adds
 complexity in the states.
 
-Eventually, we managed to have good performances with this second version as
+Eventually, we managed to have good performance with this second version as
 OpenBLAS does not make any early computation. We will present our results in the
 section \ref{sec:chores}.
 
@@ -147,7 +148,7 @@ sub-systems of the matrix. The graph is shown in the figure
 % [Solver graph] {{{
 \begin{figure}[!ht]
   \begin{center}
-    \includegraphics[scale=0.2]{img/cho-img/solver_graph.png}
+    \includegraphics[scale=0.3]{img/cho-img/solver_graph.png}
     \caption{Solver graph}
     \label{fig:solvergraph}
   \end{center}
@@ -162,16 +163,16 @@ split vector blocks.
 
 In this graph, we use the same matrix blocks as in the decomposition graph,
 allowing us to start the solving part directly when the decomposition graph
-outputs the first result block. The hole principle of \gls{hh} is to allow the
-creation of pipelines in which the data flows continuously, so we avoid having
+outputs the first result block. The key principle of \gls{hh} is to allow the
+creation of pipelines in which the data flow continuously, so we avoid having
 unnecessary barriers\footnote{Points in the program where we must wait for the
 completion of task before starting the next one.} in the process. Here, we do
 not have to finish the decomposition entirely to start solving the blocks. This
 helps to maintain maximal parallelism and ensure the computer's resources are
 used efficiently. In other words, if we represented the computation time between
 the logical cores in a Gantt chart, our goal would be to optimize the overlap
-between tasks and minimize gaps as much as possible (the cores should not be in
-a wait state for too long, at all ideally).
+between tasks and minimize gaps as much as possible (ideally, the cores should
+never be in a wait state).
 
 \clearpage{}
 \subsection{The results}
@@ -180,26 +181,27 @@ a wait state for too long, at all ideally).
 Now that we have explained the algorithm and its implementation, we will analyse
 the results of the measurements on the decomposition algorithm using both the
 OpenBLAS's implementation and the \gls{hh}'s one. Two sets of measures have been
-made on a cluster node with 192 CPU cores. For the first set, the problem size
-was 40,000 and the program has been run with a maximum of
-256 threads. On the second set, we used a 100,000 matrix and a maximum of
-384 threads (utilizing all the cores). For each problem, we measured the
-computation times of the two algorithm for different number of threads (from
-1 to the maximum) in order to see the relative speedup. With \gls{hh}, the
-number of threads was changed only for the most critical task (the update
-task). It was fixed to the optimal numbers for the other tasks (these
-numbers were found by doing first tests measures beforehand).\\
+made on a cluster node with 192 CPU cores. The specifications of the cluster are
+listed in the appendix \ref{appendix:sierra}. For the first set, the problem
+size was 40,000 and the program has been run with a maximum of 256 threads.
+The second set uses a 100,000 matrix and a maximum of 384 threads (utilizing all
+the cores). For each problem, the measurements include the computation times of
+the two algorithms for different number of threads (from 1 to the maximum) to see
+the relative speedup. With \gls{hh}, the number of threads was changed only for
+the most critical task (the update task). It was fixed to the optimal numbers
+for the other tasks (these numbers were found by doing first tests measures
+beforehand).\\
 
-First, let us analyse the measurements made on the 40,000 matrix. The figure
+First, let us analyse the measurements made on the 40,000 matrix. Figure
 \ref{fig:40000graph} shows the graph generated at the end of the program using
-\gls{hh}'s profiling tool. Here we can see that the bottleneck of the program is
-indeed the update task as we have explained before. We can see as well that only
-one thread was allocated to the diagonal task and 12 were allocated to the
-column task. The diagonal task does not require more than one thread since it
-processes at most one block at a time (this is shown by the maximum queue size
+\gls{hh}'s profiling tool. It indicates that the bottleneck of the program is
+indeed the update task as we explained before. We can see as well that a single
+thread was allocated to the diagonal task and 12 were allocated to the column
+task. The diagonal task does not require more than one thread since it processes
+at most one block at a time (this is shown by the maximum queue size
 \texttt{MQS} on the rectangle before the task). For the column task, it appears
-relatively slow (as indicated by the color). We could put more threads on it, but
-we have to make sure that we keep enough resources for the update task.
+relatively slow (as indicated by the color). We could allocate more threads to
+it, but we have to make sure that we keep enough resources for the update task.
 
 % [Hedgehog graph for the 40000 matrix] {{{
 \begin{figure}[!ht]
@@ -211,17 +213,17 @@ we have to make sure that we keep enough resources for the update task.
 \end{figure}
 %}}}
 
-On the figures \ref{fig:time40000} and \ref{fig:speedups40000} we see the
+In Figures \ref{fig:time40000} and \ref{fig:speedups40000} we see the
 computation times of the two implementations and the speedup of the \gls{hh}'s
-version compared to the OpenBLAS's one for the 40000 matrix. Here, an
-interesting behavior is observed for the OpenBLAS program. As the number threads
-increases, the \gls{hh} program continues to scale, while the OpenBLAS's one
-become unstable around a hundred threads. A possible explanation is that
-OpenBLAS is optimized for non-hyper-threaded configurations. For these
-measurements, we allocated 256 threads on the cluster which means that we
-could have used 1 thread per core till more than 128 threads was allocated to
-the program. This number is quite to the point where the instability begins to
-appear on the OpenBLAS's measurements.
+version compared to the OpenBLAS's one for the 40000 matrix. Here, we observe an
+interesting behavior for the OpenBLAS program. As the number threads increases,
+the \gls{hh} program continues to scale, while the OpenBLAS's one becomes
+unstable around 100 threads. A possible explanation is that OpenBLAS is
+optimized for non-hyper-threaded configurations. For these measurements, we
+allocated 256 threads on the cluster which means that we could have used 1
+thread per core till more than 128 threads were allocated to the program. This
+number is quite to the point where the instability begins to appear on the
+OpenBLAS's measurements.
 
 \begin{figure}[!htb]
   \begin{minipage}{0.48\linewidth}
@@ -238,7 +240,7 @@ appear on the OpenBLAS's measurements.
   \end{minipage}
 \end{figure}
 
-The figure \ref{fig:relativespeedup40000} shows the relative speedup for each
+Figure \ref{fig:relativespeedup40000} shows the relative speedup for each
 program ($\frac{time_{one_thread}}{time_{n_thread}}$). As we can see, neither
 program achieves a significant speedup. This can be attributed to the fact that
 the current problem is too small, limiting resource utilisation. For this
@@ -255,10 +257,10 @@ reason, we conducted more measurements with a bigger problem.
 %}}}
 
 The second set of measurements used a 100,000 by 100,000 matrix, and utilized up
-to 384 threads. The figures \ref{fig:time100000} and \ref{fig:speedups100000}
-show the computation times of the two implementations as well as the speedup
-of \gls{hh} against OpenBLAS as observed previously. These two plots shows
-similar results than the previous ones.
+to 384 threads. Figures \ref{fig:time100000} and \ref{fig:speedups100000} show
+the computation times of the two implementations as well as the speedup of
+\gls{hh} against OpenBLAS as observed previously. These two plots show similar
+results than the previous ones.
 
 \begin{figure}[!htb]
   \begin{minipage}{0.48\linewidth}
@@ -275,7 +277,7 @@ similar results than the previous ones.
   \end{minipage}
 \end{figure}
 
-The figure \ref{fig:relativespeedup100000} shows that we have a way better
+Figure \ref{fig:relativespeedup100000} shows that we have a way better
 relative speedup for the two algorithms. This means that the resources are
 better exploited with a bigger problem.
 
@@ -289,8 +291,8 @@ better exploited with a bigger problem.
 \end{figure}
 %}}}
 
-Eventually, we achieved to have better performances than OpenBLAS by
+Ultimately, we achieved to have better performance than OpenBLAS by
 incorporating more early computation. Additionally, the program remains readable
 and easy to understand. This demonstrates the effectiveness of the data-flow
-graph approach is in parallel computing, as well as the capabilities of the
+graph approach in parallel computing, as well as the capabilities of the
 \gls{hh} library.

@@ -16,7 +16,7 @@ x0x559f002b9bb0 [label="Update Submatrix State Manager",shape=rect, penwidth=3];
 "edgex0x559f002b4ac0[Updated]"[label="[Updated]", shape=rect];
 "edgex0x559f002b6e30[Diagonal]"[label="[Diagonal]", shape=rect];
 "edgex0x559f002b7bc0<[Diagonal], [Block]>"[label="<[Diagonal], [Block]>", shape=rect];
-"edgex0x559f002b8ab0TribleBlock"[label="TribleBlock", shape=rect];
+"edgex0x559f002b8ab0TribleBlock"[label="<[Column], [Column], [Updated]>", shape=rect];
 "edgex0x559f002b9bb0[Block]"[label="[Block]", shape=rect];
 "edgex0x559f002b9bb0[Column]"[label="[Column]", shape=rect];
 "edgex0x559f002b9bb0[Updated]"[label="[Updated]", shape=rect];

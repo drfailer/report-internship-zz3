@@ -5,9 +5,10 @@
 \section{Hedgehog}
 \label{sec:hh}
 
-\gls{hh} is a template library designed to create parallel algorithms using
-data-flow graphs \cite{bardakoff2021analysis}. It is the direct successor of
-\gls{hmbe}, which also utilized data-flow graphs \cite{blattner2017model}.
+\gls{hh} is a template library designed to create parallel implementations using
+data-flow graphs. It is the direct successor of \gls{hmbe}, which also utilized
+data-flow graphs \cite{blattner2017model}. \gls{hh} was developed as part of
+Alexandre Bardakoff's PhD thesis at NIST \cite{bardakoff2021analysis}.
 
 In this section, we will present some of the features of the library and how
 we can use it to express an algorithm under the form of a graph.
@@ -16,9 +17,9 @@ we can use it to express an algorithm under the form of a graph.
 
 As mentioned in the introduction of this section, algorithms are expressed as
 data-flow graphs. A data-flow graph is a graphical representation where edges
-denote data streams and vertices represent tasks \cite{kavi1986formal} and
-\cite{bardakoff2021analysis}. An example of data-flow graph is shown in the
-figure \ref{fig:data-flow-graph-example}.
+denote data streams and vertices represent tasks as explained by
+\cite{kavi1986formal} and \cite{bardakoff2021analysis}. An example of a
+data-flow graph is shown in Figure \ref{fig:data-flow-graph-example}.
 
 % [Data-flow graph example] {{{
 \begin{figure}[h!]
@@ -30,16 +31,16 @@ figure \ref{fig:data-flow-graph-example}.
 \end{figure}
 %}}}
 
-In each task, the input data is transformed into new data that servers as input
-of other tasks. For instance, in the figure \ref{fig:data-flow-graph-example},
-there are two inputs of types \texttt{T1} and \texttt{T5}. The data of type
-\texttt{T1} is input into the task \texttt{A} that produces a new data of type
-\texttt{T2} that is transmitted to the task \texttt{B}. At the end of the graph,
-the task \texttt{E} generate a data of type \texttt{T8} that is the output of
-the graph.
+In each task, the input data is consumed and transformed into new data that
+serves as input to other tasks. For instance, in Figure
+\ref{fig:data-flow-graph-example}, there are two inputs of types \texttt{T1} and
+\texttt{T5}. The data of type \texttt{T1} is input into Task \texttt{A} that
+produces new data of type \texttt{T2} that is transmitted to Task \texttt{B}.
+At the end of the graph, Task \texttt{E} generates data of type \texttt{T8}
+that is the output of the graph.
 
-In \gls{hh}, the data are transmitted between nodes using shared pointers in
-order to ensure efficiency even, with large data types.
+In \gls{hh}, the data are transmitted between nodes using shared pointers to
+ensure efficiency even, with large data types.
 
 \subsection{The nodes}
 
@@ -53,7 +54,7 @@ The first type of nodes are the tasks. These nodes are made to be duplicated and
 run in multiple threads. As all other nodes, a task can have multiple input and
 output types.
 
-On the listing \ref{lst:hhtask}, we can see how to create a task using \gls{hh}.
+On Listing \ref{lst:hhtask}, we can see how to create a task using \gls{hh}.
 To do this, we define a class that inherits from \texttt{hh::AbstractTask} and
 we override the \texttt{execute} and \texttt{copy} functions. The
 \texttt{execute} functions are called when the task receives a data of a certain
@@ -102,34 +103,34 @@ means that only simple operations have to be made in the states in order not to
 slow the program execution.
 
 Creating a state is very similar to creating a task. A state inherits from
-\texttt{hh::AbstractState} and override the \texttt{execute} function. However,
+\texttt{hh::AbstractState} and overrides the \texttt{execute} function. However,
 states do not have a \texttt{copy} function, as they should not be parallelized.
 
 A state cannot be used directly in a graph and must be managed by a state
-manager, which is described in the section \ref{sec:statemanager}.
+manager, which is described in Section \ref{sec:statemanager}.
 
 \subsubsection{State Managers}
 \label{sec:statemanager}
 
 A state manager is a node that owns a state. It handles locking the state when
 data is received. Multiple state managers can own the same state in a graph,
-which allows reuse of the state at different states of the computation. \gls{hh}
+which allows reuse of the state at different stages of the computation. \gls{hh}
 provides a default implementation for the state manager, but users can create
 custom ones to handle cycles.
 
-Indeed, one of the key features of \gls{hh} is the fact that it allows the
-creation of cycles in the graphs. This is particularly useful for repeating
-operations (loops in computation). However, it is not possible to automatically
-detect when a cycle can be broken at runtime. Users can implement their own
-state managers and override the \texttt{canTerminate} function to control when a
-state should stop.
+One of the key features of \gls{hh} is the fact that it allows the creation of
+cycles in the graphs. This is particularly useful for repeating operations
+(loops in computation). However, it is not possible to automatically detect when
+a cycle can be broken at runtime. Users can implement their own state managers
+and override the \texttt{canTerminate} function to control when a state should
+stop.
 
 Listing \ref{lst:statemanager} provides an example of a state manager for a type
 \texttt{MyState}. Here, the \texttt{canTerminate} function is overridden to
 return whether the state is finished. In this function, the state is locked, and
-the \texttt{idDone} method (defined in the state) is used to know if the state
+the \texttt{isDone} method (defined in the state) is used to know if the state
 can be finished. The template parameters of the \texttt{StateManager} should
-match the ones of the state.
+match the parameters used when creating the state.
 
 %- begin listing ------------------------------------------------------------{{{
 \begin{listing}[ht!]
@@ -155,18 +156,17 @@ match the ones of the state.
 \subsubsection{Graphs}
 
 Graphs themselves are nodes as well, meaning that a graph can contain other
-ones. In a graph, nodes are connected by edges in order for them to be able to
+graphs. In a graph, nodes are connected by edges in order for them to be able to
 communicate.
 
-The listing \ref{lst:graph} shows how to create a graph. In this example, some
-nodes are created (tasks and states), and the edges are defined to connect these
-nodes. For instance, at the line 12, an edge between \texttt{myTask1}
-and \texttt{myTask2} is created, meaning that the task one (the sender) will output
-data to the task two (the receiver). To be able to create an edge between two
-nodes, they must share at least one type (if task one outputs a data of type
-\texttt{T1}, the task two should accept this type as input). Like the other
-nodes, graphs have inputs and outputs, which can be specified using the
-corresponding methods.
+Listing \ref{lst:graph} shows how to create a graph. In this example, some nodes
+are created (tasks and states), and the edges are defined to connect these
+nodes. For instance, at Line 12, an edge between \texttt{myTask1} and
+\texttt{myTask2} is created, meaning that the task one (the sender) will output
+data to the task two (the receiver). To create an edge between two nodes, they
+must share at least one type (if task one outputs a data of type \texttt{T1},
+the task two should accept this type as input). Like other nodes, graphs have
+inputs and outputs, which can be specified using the corresponding methods.
 \clearpage{}
 
 %- begin listing ------------------------------------------------------------{{{
@@ -195,8 +195,8 @@ class MyGraph: public hh::Graph<1, T1, T2> {
 \end{listing}
 %- end listing --------------------------------------------------------------}}}
 
-The graph class can instanciated to create a graph to which data can be pushed
-as shown on the listing \ref{lst:graphusage}. After pushing the data, the
+The graph class can be instantiated to create a graph to which data can be
+pushed as shown in Listing \ref{lst:graphusage}. After pushing the data, the
 function \texttt{finishPushingData} is called to start the computation, and
 \texttt{waitForTermination} is used to wait for the end of the computation.
 
@@ -217,17 +217,17 @@ myGraph.waitForTermination();
 
 \subsection{Profiling}
 
-\gls{hh} includes a powerfull profiling tool that generates a \textit{dot} file.
-This file can be compiled using \textit{graphviz} to generate an image
-representing the graph. The generated graph contains detailed information on the
-execution of the graph such as the execution time, the size of the queues, the
-number of threads, and more. This information can be used to optimize the graph by
-balancing the number threads between the tasks or optimizing the tasks that are
-slower. It can also be used to refactor the algorithm as it is very easy to see
-the critical path on the image.
+\gls{hh} includes a powerful profiling tool that generates a \textit{dot} file.
+This file can be compiled using \textit{graphviz} \cite{graphviz} to generate an
+image representing the graph. The generated graph contains detailed information
+on the execution of the graph such as the execution time, the size of the
+queues, the number of threads, and more. This information can be used to
+optimize the graph by balancing the number threads between the tasks or
+optimizing the tasks that are slower. It can also be used to refactor the
+algorithm as it is very easy to identify the critical path on the image.
 
-An example of the compiled dot file for a graph performing the Hadamar product
-on two matrices is shown in the figure \ref{fig:tuto1}. This example has been
+An example of a compiled dot file for a graph performing the Hadamar product
+on two matrices is shown in Figure \ref{fig:tuto1}. This example is
 presented in the tutorials in the \gls{hh}'s documentation \cite{hh:tuto}.
 
 % [Output of the profiling tool (Hadamar Product)] {{{
@@ -240,5 +240,6 @@ presented in the tutorials in the \gls{hh}'s documentation \cite{hh:tuto}.
 \end{figure}
 %}}}
 
-It is important to note that the profiling tool is always active and incurs no
-additional cost to the execution time of the graph \cite{bardakoff2021analysis}.
+It is important to note that the profiling tool is always active and incurs
+minimal additional cost to the execution time of the graph
+\cite{bardakoff2021analysis}.

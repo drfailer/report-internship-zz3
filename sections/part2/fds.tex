@@ -27,7 +27,7 @@ directly or they can be used as input for other programs. Indeed, \gls{fds} can
 be paired with two other programs. Evac is the evacuation simulation module for
 \gls{fds}; it is used to simulate the movement of people in evacuation
 situations \cite{fds:evac}. Smokeview is a visualization program that displays
-the output of \gls{fds}. The figure \ref{fig:smvexample} shows an example of the
+the output of \gls{fds}. Figure \ref{fig:smvexample} shows an example of the
 Smokeview's output. The usage of this tool is described in \cite{smvguide}.
 
 % [Smokeview example] {{{
@@ -142,7 +142,7 @@ program calculates the mean for each direction (\texttt{FVX}, \texttt{FVY} and
 \texttt{FVZ}) in order to have simple values that can be easily verified. The
 computation time of the mean is not taken into account when we make the measure
 on the original test program, unlike in the \gls{hh} one. We will explain why
-the \gls{hh} program measures the computation of the mean as well in the section
+the \gls{hh} program measures the computation of the mean as well in Section
 \ref{sec:3Dloopsmethod}. Finally, like in the \gls{fds}'s code, most of the
 variables are global, which makes difficult to analyze the dependencies between
 the tasks.
@@ -208,7 +208,7 @@ using the corresponding identifiers.
 \end{listing}
 %- end listing --------------------------------------------------------------}}}
 
-The figure \ref{fig:loopsgraph} shows that the \gls{hh} graph has three steps:
+Figure \ref{fig:loopsgraph} shows that the \gls{hh} graph has three steps:
 
 \begin{itemize}
   \item Initialization: creation of the block indices (has previously
@@ -259,7 +259,7 @@ and the consistency of the program. \clearpage{}
 \begin{figure}[ht!]
   \begin{center}
     \includegraphics[scale=0.6]{img/fds-loops/times.png}
-    \caption{Computation times of the test program for HH and FDS (200 threads node)}
+    \caption{Computation times of the test program for Hedgehog and FDS (200 threads node)}
     \label{fig:loopscomptime}
   \end{center}
 \end{figure}
@@ -275,7 +275,7 @@ which results in a very high speedup of the \gls{hh} program.
 \begin{figure}[ht!]
   \begin{center}
     \includegraphics[scale=0.6]{img/fds-loops/speedup.png}
-    \caption{Acceleration of HH over FDS on the test program (200 threads node)}
+    \caption{Acceleration of Hedgehog over FDS on the test program (200 threads node)}
     \label{fig:loopsspeedup}
   \end{center}
 \end{figure}
@@ -299,7 +299,7 @@ section.
 \begin{figure}[ht!]
   \begin{center}
     \includegraphics[scale=0.6]{img/fds-loops/relative_speedup.png}
-    \caption{Relative speedup for HH and FDS on the test program (200 threads node)}
+    \caption{Relative speedup for Hedgehog and FDS on the test program (200 threads node)}
     \label{fig:loopsrelativespeedup}
   \end{center}
 \end{figure}
@@ -325,7 +325,7 @@ organized graph is very important to keep the application maintainable and
 expandable.
 
 Secondly, with this method, it is not easy to have computation in C++. As
-discussed the section \ref{sec:cholesky}, some parts of the code were completely
+discussed Section \ref{sec:cholesky}, some parts of the code were completely
 rewritten in C++. Keeping all the data as global variables in Fortran
 complicated the usage of pure C++ or external \footnote{Here, external means
 that the sub-graphs uses other languages.} sub-graphs. The data that flows into
@@ -334,7 +334,7 @@ require to have synchronisation tasks for copying the data between them. Such
 tasks would have a significant impact on the performance.
 
 Finally, it may not always be possible to keep the types as they currently are
-in \gls{fds}. Indeed, explained in the section \ref{sec:fdsdesc}, the simulator
+in \gls{fds}. Indeed, explained in Section \ref{sec:fdsdesc}, the simulator
 performs computation on meshes and this computation can be done on multiple
 node. Since these meshes belong to the same geometrical area, after each
 computation, we need to synchronise the modifications make to the

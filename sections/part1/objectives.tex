@@ -5,23 +5,22 @@
 \clearpage
 \section{Objectives}
 
-The objective of the internship is to study the usage of \gls{hh} and the
-data-flow graphs in the context of \gls{hpc} applications. One of the project's
-goals is to use \gls{hh} to accelerate a simulation application called
-\gls{fds}.\\
+The objective of the internship is to study the usage of \gls{hh} and data-flow
+graphs in the context of \gls{hpc} applications. One of the project's goals is
+to use \gls{hh} to accelerate a simulation application called \gls{fds}.\\
 
 \gls{hh} is a \gls{hpc} library written in C++ and developed at the NIST. It
 uses data-flow graphs to express algorithms composed of tasks that can be run
-asynchronously. This library will be described in the section \ref{sec:hh}.\\
+asynchronously. This library will be described in Section \ref{sec:hh}.\\
 
-\gls{fds} is a fire simulation also created at the NIST. The simulator reads a
-configuration file, solves the fluid dynamics equations and output the results
+\gls{fds} is a fire simulation also developed at the NIST. The simulator reads a
+configuration file, solves the fluid dynamics equations and outputs the results
 into files that can be analyzed directly or used with other programs. Currently,
-\gls{fds} is written in Fortran (standard 2018) and it is parallelized with MPI
-and OpenMP. The objective is not to study the mathematical model behind the
-simulation. This is to study how the code is organized and how it processes the
-data, in order to be able to design a \gls{hh} graph that will orchestrate the
-simulation.\\
+\gls{fds} is written in Fortran (standard 2018); it is parallelized with MPI and
+OpenMP. The objective is not to study the mathematical model behind the
+simulation, but rather to study how the code is organized and how it processes
+the data, to be able to design a \gls{hh} graph that will orchestrate the
+simulation and improve its multicore performance.\\
 
 Another goal of the internship is to contribute to the development of \gls{hh}.
 Currently, the library does not support running on multiple nodes on clusters.
