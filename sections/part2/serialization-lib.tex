@@ -126,6 +126,7 @@ invoke the \textit{convertor}. Listing \ref{lst:externserialize} shows the
 implementation of the \texttt{serialize} function. The external function is used
 rather that generating all the code inline as it simplifies maintenance.
 
+\clearpage{}
 %- begin listing ------------------------------------------------------------{{{
 \begin{listing}[ht!]
 \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
@@ -183,6 +184,7 @@ fundamental types \texttt{int} and \texttt{double}. The third attribute is a
 vector of integers, followed by a pointer to a double. The last attribute is a
 shared pointer on a \texttt{Class2} object.
 
+\clearpage{}
 %- begin listing ------------------------------------------------------------{{{
 \begin{listing}[ht!]
 \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{C++}
@@ -358,7 +360,7 @@ more readable as they are not lost in the compiler output.
   }
 \end{minted}
 \caption{Fallback serialization method}
-\label{lstd:fallbackserialize}
+\label{lst:fallbackserialize}
 \end{listing}
 %- end listing --------------------------------------------------------------}}}
 
@@ -496,7 +498,6 @@ class MyClass {
 \end{listing}
 %- end listing --------------------------------------------------------------}}}
 
-\clearpage{}
 \subsubsection{Functions}
 
 Finally, it is now possible to execute functions at any stage of the
