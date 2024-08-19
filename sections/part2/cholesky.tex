@@ -142,8 +142,7 @@ OpenBLAS does not make any early computation. We will present our results in the
 section \ref{sec:chores}.
 
 For the solver, we use a second graph that is employed twice to solve the two
-sub-systems of the matrix. The graph is shown in the figure
-\ref{fig:solvergraph}.
+sub-systems of the matrix. The graph is shown in Figure \ref{fig:solvergraph}.
 
 % [Solver graph] {{{
 \begin{figure}[!ht]
@@ -182,7 +181,7 @@ Now that we have explained the algorithm and its implementation, we will analyse
 the results of the measurements on the decomposition algorithm using both the
 OpenBLAS's implementation and the \gls{hh}'s one. Two sets of measures have been
 made on a cluster node with 192 CPU cores. The specifications of the cluster are
-listed in the appendix \ref{appendix:sierra}. For the first set, the problem
+listed in Appendix \ref{appendix:sierra}. For the first set, the problem
 size was 40,000 and the program has been run with a maximum of 256 threads.
 The second set uses a 100,000 matrix and a maximum of 384 threads (utilizing all
 the cores). For each problem, the measurements include the computation times of
@@ -207,7 +206,7 @@ it, but we have to make sure that we keep enough resources for the update task.
 \begin{figure}[!ht]
   \begin{center}
     \includegraphics[scale=0.15]{img/cho-img/40000.png}
-    \caption{Hedgehog graph for the 40000 matrix}
+    \caption{Hedgehog graph for the 40,000 matrix}
     \label{fig:40000graph}
   \end{center}
 \end{figure}
@@ -215,7 +214,7 @@ it, but we have to make sure that we keep enough resources for the update task.
 
 In Figures \ref{fig:time40000} and \ref{fig:speedups40000} we see the
 computation times of the two implementations and the speedup of the \gls{hh}'s
-version compared to the OpenBLAS's one for the 40000 matrix. Here, we observe an
+version compared to the OpenBLAS's one for the 40,000 matrix. Here, we observe an
 interesting behavior for the OpenBLAS program. As the number threads increases,
 the \gls{hh} program continues to scale, while the OpenBLAS's one becomes
 unstable around 100 threads. A possible explanation is that OpenBLAS is
@@ -229,13 +228,13 @@ OpenBLAS's measurements.
   \begin{minipage}{0.48\linewidth}
     \centering
     \includegraphics[scale=0.5]{img/cho-img/times-40000.png}
-    \caption{Computation times for a 40000 matrix}
+    \caption{Computation times for a 40,000 matrix}
     \label{fig:time40000}
   \end{minipage}\hfill
   \begin{minipage}{0.48\linewidth}
     \centering
     \includegraphics[scale=0.5]{img/cho-img/speedup-40000.png}
-    \caption{Speedups for a 40000 matrix (hedgehog / OpenBLAS)}
+    \caption{Speedups for a 40,000 matrix (hedgehog / OpenBLAS)}
     \label{fig:speedups40000}
   \end{minipage}
 \end{figure}
@@ -250,13 +249,13 @@ reason, we conducted more measurements with a bigger problem.
 \begin{figure}[!ht]
   \begin{center}
     \includegraphics[scale=0.8]{img/cho-img/relative-speedup-40000.png}
-    \caption{Relative speedups for a 40000 matrix}
+    \caption{Relative speedups for a 40,000 matrix}
     \label{fig:relativespeedup40000}
   \end{center}
 \end{figure}
 %}}}
 
-The second set of measurements used a 100,000 by 100,000 matrix, and utilized up
+The second set of measurements used a $100,000\times100,000$ matrix, and utilized up
 to 384 threads. Figures \ref{fig:time100000} and \ref{fig:speedups100000} show
 the computation times of the two implementations as well as the speedup of
 \gls{hh} against OpenBLAS as observed previously. These two plots show similar

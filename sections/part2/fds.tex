@@ -48,18 +48,18 @@ mathematical model for turbulence used in computational fluid dynamics
 \cite{enwiki:les}. This is an alternative to direct numerical simulation (DNS)
 when the computational costs become too high. The idea is to ignore the small
 elements by utilizing a low-pass filter on the equations to simplify the
-computation \cite{enwiki:les} and \cite{ferziger1996large}. The small elements
-can still have an effect on the solution. To solve this problem, \gls{fds}
-simulation is divided in two parts as described in the technical reference
-\cite{fdsref}. First the predictor part estimates the terms at the next time
-step. At the end of the predictor, the simulator verifies the stability
-conditions. If the stability conditions are satisfied, the predictor proceeds to
-the next time step. Otherwise, the corrector adjusts the terms before the
-simulation continues to the next time step. Both of these steps will be
-represented as sub-graphs in the \gls{hh} version of the simulator. The
+computation as explained in \cite{enwiki:les} and \cite{ferziger1996large}. The
+small elements can still have an effect on the solution. To solve this problem,
+\gls{fds} simulation is divided in two parts as described in the technical
+reference \cite{fdsref}. First the predictor part estimates the terms at the
+next time step. At the end of the predictor, the simulator verifies the
+stability conditions. If the stability conditions are satisfied, the predictor
+proceeds to the next time step. Otherwise, the corrector adjusts the terms
+before the simulation continues to the next time step. Both of these steps will
+be represented as sub-graphs in the \gls{hh} version of the simulator. The
 \gls{fds}'s simulation has many other characteristics that will not be detailed
 in this report. However, all the mathematical tools and models used by the
-simulators are detailed by \cite{fdsref}.
+simulator are detailed by \cite{fdsref}.
 
 The simulation is written entirely in Fortran (standard 2018). The code is
 already parallelized using MPI and OpenMP. MPI is used to parallelize the
@@ -71,8 +71,8 @@ matrices.} on multiple nodes on a cluster, and OpenMP is used to parallelize
 many of the loops that are present in the program. Interestingly, \gls{fds} does
 not use any other dependencies such as \textit{BLAS} or \textit{LAPACK} that
 we used in the Cholesky implementation. Furthermore, the simulator is not yet
-capable of performing GPU computation. However, the developers are interested in
-using GPUs in the \gls{hh} implementation.
+capable of performing GPU computation, however, the developers are interested in
+using GPUs in the \gls{hh} implementation.\\
 
 Now that we have described what \gls{fds} is, let us see what has been done to
 optimize the simulation with \gls{hh}.
@@ -162,11 +162,11 @@ managed by \gls{hh}.
 As mentioned in the introduction of this section, to optimize computation time,
 we have used block decomposition on the 3D arrays of the simulation. In order to
 do this, the Fortran code was reorganized in subroutines that are parametrized
-with the boundaries. The declarations of these new subroutines are shown in the
-listing \ref{lst:looproutines}. Here we can see as well that we use the ISO C
-bindings to be able to call the subroutines from C++. The original loops have
-been moved in the new subroutines, and modified to iterate over the blocks
-instead of the whole matrix. \clearpage{}
+with the boundaries of the blocks. The declarations of these new subroutines are
+shown in Listing \ref{lst:looproutines}. Here we can see as well that we use
+the ISO C bindings to be able to call the subroutines from C++. The original
+loops have been moved in the new subroutines, and modified to iterate over the
+blocks instead of the whole matrix. \clearpage{}
 
 %- begin listing ------------------------------------------------------------{{{
 \begin{listing}[ht!]
@@ -214,10 +214,10 @@ Figure \ref{fig:loopsgraph} shows that the \gls{hh} graph has three steps:
   \item Initialization: creation of the block indices (has previously
     mentioned, \gls{hh} manages only indices and not the actual data).
   \item Computation of the velocity: this part holds the loops that compute the
-    velocity for the x, y and z axis. There is one task per axis, and these
-    tasks call the Fortran subroutines with the blocks boundaries. As shown in
-    the graph, all those three tasks are executed in parallel.
-  \item Computation of the mean
+    velocity for the $x$, $y$ and $z$ axis. There is one task per axis, and
+    these tasks call the Fortran subroutines with the blocks boundaries. As
+    shown in the graph, all those three tasks are executed in parallel.
+  \item Computation of the mean.
 \end{itemize}
 \clearpage{}
 
@@ -237,12 +237,18 @@ three queues of data. If only one tasks was used, all the blocks for each axis
 would be in the same queue. To optimize the dequeue times, we use multiple tasks
 running in parallel, with each task having its own queue.
 
+Finally,  the \gls{hh} program computes the mean to demonstrate the pipelining
+principle of the library. The blocks outputted by the compute tasks are directly
+accumulated in the sum task. We will see in the next section that even if the
+\gls{hh} program performs this additional operation, it is still faster than the
+\gls{fds} one.
+
 \subsubsection{The results}
 
 Now that we have explained how the graph has been implemented, we can describe
 the results. Before we start, it is important to mention that the measurements
-were taken on a node that has 384 threads, however, here, only 200 threads where
-available. Another important detail concern the problem size. In order to test
+were taken on a node that has 384 threads, however, only 200 threads where
+available. Another important detail concerns the problem size. In order to test
 the limits of the algorithm, the measures have been made on very big matrices
 ($1024\times1024\times1024$). This size is much larger compared to the size of
 the meshes that the algorithm will treat in reality. Making the measures on such
@@ -327,17 +333,17 @@ expandable.
 Secondly, with this method, it is not easy to have computation in C++. As
 discussed Section \ref{sec:cholesky}, some parts of the code were completely
 rewritten in C++. Keeping all the data as global variables in Fortran
-complicated the usage of pure C++ or external \footnote{Here, external means
+complicates the usage of pure C++ or external \footnote{Here, external means
 that the sub-graphs uses other languages.} sub-graphs. The data that flows into
 the global graph should not be defined in both languages, otherwise, this would
 require to have synchronisation tasks for copying the data between them. Such
 tasks would have a significant impact on the performance.
 
 Finally, it may not always be possible to keep the types as they currently are
-in \gls{fds}. Indeed, explained in Section \ref{sec:fdsdesc}, the simulator
+in \gls{fds}. Indeed, as explained in Section \ref{sec:fdsdesc}, the simulator
 performs computation on meshes and this computation can be done on multiple
-node. Since these meshes belong to the same geometrical area, after each
-computation, we need to synchronise the modifications make to the
+nodes. Since these meshes belong to the same geometrical area, after each
+computation, we need to synchronise the modifications made to the
 stencils \footnote{Area around a mesh that is shared with other meshes} of the
 meshes. This problem will also be present with the blocks on the \gls{hh}
 version. To perform the update efficiently, we will need to have a data
@@ -363,18 +369,18 @@ for optimizing the entire code. We have demonstrated that it is possible to
 rewrite some sections entirely in C++, such as the Cholesky decomposition. We
 also experimented using \gls{hh} as an orchestrator while keeping all the
 computation and the memory in Fortran, and we have seen why this is eventually
-the ideal approach.
+not the ideal approach.
 
 To parallelize the entire simulation with \gls{hh} we have tried to tackle the
 problem from two sides. First, we aimed to parallelize specific pieces of the
-application, as we did for the velocity. Second, we focus on creating a global
+application, as we did for the velocity. Second, we focused on creating a global
 graph and try to set up a pipeline threw the entire simulation. The role of the
 global graph is to call Fortran subroutines. The gaol is to refactor the graph
 in order to have more specific tasks after each iteration. For instance, we
-start by having a graph that calls a main function in Fortran. Then we refactor
-this graph into a new one that has three tasks: the initialization, the main
-loop and the end of the program. Then we try to split each of these three tasks
-into sub-tasks to create a new graph, and we keep iterating till our tasks are
+begin with a graph that calls a main function in Fortran. Then we refactor this
+graph into a new one that has three tasks: the initialization, the main loop and
+the end of the program. Then we try to split each of these three tasks into
+sub-tasks to create a new graph, and we keep iterating till our tasks are
 precise enough. Eventually, we should end up having atomic tasks, and some of
 them can be run in parallel.
 
